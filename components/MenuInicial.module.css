@@ -1,12 +1,11 @@
 .container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background-image: url("https://wallpapers.com/images/hd/mercedes-amg-gt-f2vj73tvk44r4810.jpg");
-background-size: cover;
-background-position: center;
-background-repeat: no-repeat;
+  position: relative;
+   background: linear-gradient(135deg, #7a7a7a, #0f172a);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 .container::before {
   content: "";
@@ -15,51 +14,128 @@ background-repeat: no-repeat;
   background: rgba(0, 0, 0, 0.4);
 }
 
-.box {
-  position: relative;
+/* Sidebar */
+.sideBar {
+  position: fixed;
   z-index: 1;
-  width: 420px;
-  padding: 48px;
-
-  border-radius: 24px;
-  
-
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.15),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
-
+  width: 5%;
+  height: 100vh;
+  background: rgba(30, 29, 34, 0.8);
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  padding-top: 30px;
+  gap: 5px;
+}
 
+/* Botão só com ícone */
+.iconButton {
+  width: 100%;
+  height: 70px;
+  border: none;
+
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+.iconButton {
+  color: white;
+}
+.iconButton img {
+  
+  width: 22px;
+  height: 22px;
+  opacity: 0.6;
+  transition: 0.2s ease;
+  
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.iconButton:hover img {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.main {
+  position: relative;
+  flex: 1;
+  margin-left: 80px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.topBar {
+  width: 100%;
+  padding: 20px 40px;   /* dá espaço interno */
+  display: flex;
+  align-items: center;  /* centraliza verticalmente */
+  justify-content: space-between; /* distribui título à esquerda e botão à direita */
+}
+
+
+.dashboard {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: grid;
+  gap: 20px;
+  flex: 1;
+  padding: 50px;
+
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+
+  grid-template-areas:
+    "a a b c"
+    "a a d e"
+    "f g d h"
+    "i i i h";
+    
+}
+
+/* 🔹 Mapeamento das áreas */
+.cardA { grid-area: a; }
+.cardB { grid-area: b; }
+.cardC { grid-area: c; }
+.cardD { grid-area: d; }
+.cardE { grid-area: e; }
+.cardF { grid-area: f; }
+.cardG { grid-area: g; }
+.cardH { grid-area: h; }
+.cardI { grid-area: i; }
+
+/* 🔹 Estilo base dos cards */
+.dashboard > div {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.box:hover {
-  transform: translateY(-6px);
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.25),
-    inset 0 1px 1px rgba(255, 255, 255, 0.4);
+.dashboard > div:hover {
+  transform: translateY(-5px);
 }
+
 
 .title {
   font-size: 2rem;
   font-weight: 600;
   color: white;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 .subtitle {
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.75);
-  margin-bottom: 30px;
+  margin-bottom: 0px;
 }
 
 .button {
@@ -71,6 +147,27 @@ background-repeat: no-repeat;
   font-weight: 500;
   transition: all 0.25s ease;
 }
+.buttonPendente {
+  display: flex;              /* ativa flexbox */
+  flex-direction: column;     /* empilha texto e ícone em coluna */
+  justify-content: center;    /* centraliza verticalmente */
+  align-items: center;        /* centraliza horizontalmente */
+  
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 50;
+  transition: all 0.25s ease;
+  text-align: center;
+  padding: 0.25rem;              /* dá espaço interno */
+}
+
+.buttonPendente:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(12, 2, 97, 0.4);
+}
+
 
 .primary {
   background: linear-gradient(135deg, #3b82f6, #6366f1);

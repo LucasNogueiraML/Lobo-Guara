@@ -12,30 +12,39 @@ export default function MenuInicial({ nome, tarefasPendentes }: Props) {
   const router = useRouter()
 
   return (
-    <div className={styles.container}>
-      <div className={styles.box}>
-        <h1 className={styles.title}>Olá, {nome}</h1>
+  <div className={styles.container}>
+    
+   
 
-        <p className={styles.subtitle}>
-          Você tem {tarefasPendentes} tarefas pendentes para hoje
-        </p>
-
-        <div className={styles.buttons}>
-          <button
-            className={`${styles.button} ${styles.primary}`}
-            onClick={() => router.push("/tarefas")}
-          >
-            Ir para Tarefas
-          </button>
-
-          <button
-            className={`${styles.button} ${styles.secondary}`}
-            onClick={() => router.push("/financeiro")}
-          >
-            Ir para Financeiro
-          </button>
+    {/* ÁREA DIREITA INTEIRA */}
+    <div className={styles.main}>
+      
+      {/* TOPBAR */}
+      <header className={styles.topBar}>
+        <div>
+          <h1 className={styles.title}>Olá, {nome}</h1>
+         <button onClick={() => router.push("/tarefas")} 
+         className={styles.buttonPendente}> 
+         <p className={styles.subtitle}> Você tem {tarefasPendentes} tarefas pendentes </p> 
+         </button>
+          
         </div>
-      </div>
+      </header>
+
+      {/* DASHBOARD */}
+      <main className={styles.dashboard}>
+        <div className={styles.cardA}>Financeiro</div>
+        <div className={styles.cardB}>Tarefas Hoje</div>
+        <div className={styles.cardC}>Estatísticas</div>
+        <div className={styles.cardD}>Projeções</div>
+        <div className={styles.cardE}>Planejamento</div>
+        <div className={styles.cardF}>Curiosidades</div>
+        <div className={styles.cardG}>Horas Totais</div>
+        <div className={styles.cardH}>Metas</div>
+        <div className={styles.cardI}>Resumo Geral</div>
+      </main>
+
     </div>
-  )
-}
+    
+  </div>
+)}

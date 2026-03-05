@@ -1,4 +1,4 @@
-import { Task } from "@/.next/types/task"
+import { Task } from "@/types/task"
 
 type Props = {
   tasks: Task[]
