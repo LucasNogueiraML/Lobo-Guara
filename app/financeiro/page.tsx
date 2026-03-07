@@ -1,3 +1,4 @@
-export default function Financeiro() {
-  return <h1 style={{ padding: 20 }}>Página Financeira</h1>
+import FinancePage from "@/./components/FinancePage"
+export default function Page() {
+  return <FinancePage />
 }
