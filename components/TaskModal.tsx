@@ -16,8 +16,9 @@ export default function TaskModal({ onClose, onAdd }: Props) {
   const [priority, setPriority] = useState<Task["priority"]>("media")
   const [tag, setTag] = useState(TAGS[0])
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!title.trim()) {
       setError("Dê um nome para a tarefa")
       return
@@ -33,8 +34,20 @@ export default function TaskModal({ onClose, onAdd }: Props) {
       createdAt: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
     }
 
-    onAdd(newTask)
-    onClose()
+    setLoading(true)
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTask),
+    })
+    setLoading(false)
+
+    if (res.ok) {
+      onAdd(newTask)
+      onClose()
+    } else {
+      setError("Erro ao salvar no banco")
+    }
   }
 
   return (
@@ -116,8 +129,10 @@ export default function TaskModal({ onClose, onAdd }: Props) {
 
         {/* Ações */}
         <div className={styles.modalActions}>
-          <button className={styles.cancelBtn} onClick={onClose}>Cancelar</button>
-          <button className={styles.submitBtn} onClick={handleSubmit}>Criar tarefa</button>
+          <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>Cancelar</button>
+          <button className={styles.submitBtn} onClick={handleSubmit} disabled={loading}>
+            {loading ? "Salvando..." : "Criar tarefa"}
+          </button>
         </div>
 
       </div>
