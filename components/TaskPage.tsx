@@ -1,29 +1,37 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import styles from "./TaskPage.module.css"
 import TaskCard from "@/components/TaskCard"
 import TaskModal from "@/components/TaskModal"
 import { Task, FilterType } from "@/types/task"
 
-const INITIAL_TASKS: Task[] = [
-  { id: "1", title: "Revisar orçamento mensal",  desc: "Verificar gastos de fevereiro e ajustar categorias", completed: true,  priority: "alta",  tag: "Financeiro", createdAt: "02/03" },
-  { id: "2", title: "Reunião com cliente",        desc: "Apresentar proposta do novo projeto",               completed: false, priority: "alta",  tag: "Trabalho",   createdAt: "02/03" },
-  { id: "3", title: "Estudar TypeScript avançado",desc: "Focar em generics e utility types",                 completed: false, priority: "media", tag: "Estudos",    createdAt: "01/03" },
-]
-
 const FILTER_LABELS: { key: FilterType; label: string }[] = [
-  { key: "todas",     label: "Todas"     },
-  { key: "pendentes", label: "Pendentes" },
-  { key: "concluidas",label: "Concluídas"},
+  { key: "todas",      label: "Todas"     },
+  { key: "pendentes",  label: "Pendentes" },
+  { key: "concluidas", label: "Concluídas"},
 ]
 
 export default function TaskPage() {
   const router = useRouter()
-  const [tasks, setTasks]       = useState<Task[]>(INITIAL_TASKS)
+  const [tasks, setTasks]         = useState<Task[]>([])
   const [modalOpen, setModalOpen] = useState(false)
-  const [filter, setFilter]     = useState<FilterType>("todas")
+  const [filter, setFilter]       = useState<FilterType>("todas")
+
+  // Carrega tarefas: localStorage primeiro (instantâneo), banco depois (atualiza)
+  useEffect(() => {
+    const local = localStorage.getItem("tasks")
+    if (local) setTasks(JSON.parse(local))
+
+    fetch("/api/tasks")
+      .then((res) => res.json())
+      .then((data) => {
+        setTasks(data)
+        localStorage.setItem("tasks", JSON.stringify(data))
+      })
+      .catch(() => console.log("Render dormindo, usando dados locais"))
+  }, [])
 
   const pendentes  = tasks.filter((t) => !t.completed).length
   const concluidas = tasks.filter((t) =>  t.completed).length
@@ -35,7 +43,9 @@ export default function TaskPage() {
   })
 
   function handleAdd(task: Task) {
-    setTasks((prev) => [task, ...prev])
+    const updated = [task, ...tasks]
+    setTasks(updated)
+    localStorage.setItem("tasks", JSON.stringify(updated))
   }
 
   function handleToggle(id: string) {
@@ -56,7 +66,15 @@ export default function TaskPage() {
       <div className={styles.bgOrb1} />
       <div className={styles.bgOrb2} />
 
-     
+      {/* Sidebar */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebarLogo}>FT</div>
+        <button className={styles.sideIcon} onClick={() => router.push("/")}         title="Dashboard">⊞</button>
+        <button className={`${styles.sideIcon} ${styles.sideIconActive}`}            title="Tarefas">✓</button>
+        <button className={styles.sideIcon} onClick={() => router.push("/financeiro")} title="Financeiro">₿</button>
+        <div style={{ flex: 1 }} />
+        <button className={styles.sideIcon} title="Configurações">⚙</button>
+      </aside>
 
       {/* Main */}
       <main className={styles.main}>
