@@ -27,9 +27,10 @@ export default function TaskPage() {
     fetch("/api/tasks")
       .then((res) => res.json())
       .then((data) => {
-        setTasks(data)
-        localStorage.setItem("tasks", JSON.stringify(data))
-      })
+  const list = Array.isArray(data) ? data : []
+  setTasks(list)
+  localStorage.setItem("tasks", JSON.stringify(list))
+})
       .catch(() => console.log("Render dormindo, usando dados locais"))
   }, [])
 
@@ -48,15 +49,27 @@ export default function TaskPage() {
     localStorage.setItem("tasks", JSON.stringify(updated))
   }
 
-  function handleToggle(id: string) {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    )
-  }
+ async function handleToggle(id: string) {
+  const task = tasks.find((t) => t.id === id)
+  if (!task) return
+  await fetch("/api/tasks", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, completed: !task.completed }),
+  })
+  setTasks((prev) =>
+    prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+  )
+}
 
-  function handleDelete(id: string) {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
-  }
+async function handleDelete(id: string) {
+  await fetch("/api/tasks", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  })
+  setTasks((prev) => prev.filter((t) => t.id !== id))
+}
 
   return (
     <div className={styles.page}>
@@ -65,16 +78,6 @@ export default function TaskPage() {
       <div className={styles.bg} />
       <div className={styles.bgOrb1} />
       <div className={styles.bgOrb2} />
-
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarLogo}>FT</div>
-        <button className={styles.sideIcon} onClick={() => router.push("/")}         title="Dashboard">⊞</button>
-        <button className={`${styles.sideIcon} ${styles.sideIconActive}`}            title="Tarefas">✓</button>
-        <button className={styles.sideIcon} onClick={() => router.push("/financeiro")} title="Financeiro">₿</button>
-        <div style={{ flex: 1 }} />
-        <button className={styles.sideIcon} title="Configurações">⚙</button>
-      </aside>
 
       {/* Main */}
       <main className={styles.main}>
@@ -144,3 +147,4 @@ export default function TaskPage() {
     </div>
   )
 }
+

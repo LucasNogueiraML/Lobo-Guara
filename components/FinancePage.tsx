@@ -1,19 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import styles from "./FinancePage.module.css"
 import TransactionCard from "@/./components/TransactionCard"
 import TransactionModal from "@/./components/TransactionModal"
 import { Transaction, FilterType, formatBRL } from "@/./types/finance"
-
-const INITIAL_TRANSACTIONS: Transaction[] = [
-  { id: "1", title: "Salário",          amount: 5000, type: "receita", category: "Salário",      date: "01/03" },
-  { id: "2", title: "Aluguel",          amount: 1500, type: "despesa", category: "Moradia",      date: "05/03" },
-  { id: "3", title: "Supermercado",     amount: 320,  type: "despesa", category: "Alimentação",  date: "06/03" },
-  { id: "4", title: "Freelance React",  amount: 800,  type: "receita", category: "Freelance",    date: "03/03" },
-  { id: "5", title: "Uber",             amount: 45,   type: "despesa", category: "Transporte",   date: "06/03" },
-]
 
 const FILTER_LABELS: { key: FilterType; label: string }[] = [
   { key: "todas",    label: "Todas"    },
@@ -23,9 +15,23 @@ const FILTER_LABELS: { key: FilterType; label: string }[] = [
 
 export default function FinancePage() {
   const router = useRouter()
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
   const [modalOpen, setModalOpen]       = useState(false)
   const [filter, setFilter]             = useState<FilterType>("todas")
+
+  useEffect(() => {
+    const local = localStorage.getItem("transactions")
+    if (local) setTransactions(JSON.parse(local))
+
+    fetch("/api/financeiro")
+      .then((res) => res.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : []
+        setTransactions(list)
+        localStorage.setItem("transactions", JSON.stringify(list))
+      })
+      .catch(() => console.log("Usando dados locais"))
+  }, [])
 
   const totalReceitas = transactions.filter((t) => t.type === "receita").reduce((s, t) => s + t.amount, 0)
   const totalDespesas = transactions.filter((t) => t.type === "despesa").reduce((s, t) => s + t.amount, 0)
@@ -37,11 +43,23 @@ export default function FinancePage() {
     return true
   })
 
-  function handleAdd(t: Transaction) {
-    setTransactions((prev) => [t, ...prev])
+  async function handleAdd(t: Transaction) {
+    await fetch("/api/financeiro", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(t),
+    })
+    const updated = [t, ...transactions]
+    setTransactions(updated)
+    localStorage.setItem("transactions", JSON.stringify(updated))
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
+    await fetch("/api/financeiro", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    })
     setTransactions((prev) => prev.filter((t) => t.id !== id))
   }
 
