@@ -35,7 +35,9 @@ export default function FinancePage() {
 
   const totalReceitas = transactions.filter((t) => t.type === "receita").reduce((s, t) => s + t.amount, 0)
   const totalDespesas = transactions.filter((t) => t.type === "despesa").reduce((s, t) => s + t.amount, 0)
-  const saldo         = totalReceitas - totalDespesas
+
+  //const gastosPrevistos = transactions = transactions.filter
+  const saldo = totalReceitas - totalDespesas
 
   const filtered = transactions.filter((t) => {
     if (filter === "receitas") return t.type === "receita"
@@ -104,6 +106,16 @@ export default function FinancePage() {
             <p className={styles.summaryLabel}>Total despesas</p>
             <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(totalDespesas)}</p>
             <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "despesa").length} saídas</p>
+          </div>
+          <div className={styles.summaryCard}>
+            <p className={styles.summaryLabel}>Gastos Previstos neste mês</p>
+            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(totalDespesas)}</p>
+            <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "despesa").length} saídas</p>
+          </div>
+          <div className={styles.summaryCard}>
+            <p className={styles.summaryLabel}>Receitas Previstas neste mês</p>
+            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(totalReceitas)}</p>
+            <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "receita").length} entradas</p>
           </div>
         </div>
 

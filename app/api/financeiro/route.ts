@@ -34,13 +34,13 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { id, title, amount, type, category, createdAt } = body
+  const { id, title, amount, type, category, date, data, recorrencia } = body
 
   try {
     await pool.query(
-      `INSERT INTO financeiro (id, title, amount, type, category, "createdAt", user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [id, title, amount, type, category, createdAt, session.user.email]
+      `INSERT INTO financeiro (id, title, amount, type, category, date, data, recorrencia, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [id, title, amount, type, category, date, data, recorrencia, session.user.email]
     )
     return NextResponse.json({ success: true })
   } catch (err) {

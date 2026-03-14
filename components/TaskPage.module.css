@@ -7,6 +7,10 @@
   background: #080c14;
   font-family: "Segoe UI", system-ui, sans-serif;
 }
+.select option {
+  background: #1e2030;
+  color: white;
+}
 
 .bg {
   position: fixed;
