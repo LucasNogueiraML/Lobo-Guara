@@ -52,7 +52,7 @@ export default function TransactionCard({ transaction, onDelete }: Props) {
             transaction.type === "receita" ? styles.amountPositive : styles.amountNegative
           }`}
         >
-          {cfg.sign} {formatBRL(transaction.amount)}
+          {cfg.sign} {formatBRL(Number(transaction.amount))}
         </span>
         <button className={styles.deleteBtn} onClick={() => onDelete(transaction.id)}>✕</button>
       </div>

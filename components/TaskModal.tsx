@@ -11,18 +11,29 @@ type Props = {
 }
 
 export default function TaskModal({ onClose, onAdd }: Props) {
-  const [title, setTitle] = useState("")
-  const [desc, setDesc] = useState("")
+  const [title, setTitle]       = useState("")
+  const [desc, setDesc]         = useState("")
   const [priority, setPriority] = useState<Task["priority"]>("media")
-  const [tag, setTag] = useState(TAGS[0])
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [tag, setTag]           = useState(TAGS[0])
+  const [error, setError]       = useState("")
+  const [loading, setLoading]   = useState(false)
+  const [dataTipo, setDataTipo] = useState<"Indeterminado" | "escolher">("Indeterminado")
+  const [customData, setCustomData] = useState("")
 
   async function handleSubmit() {
     if (!title.trim()) {
       setError("Dê um nome para a tarefa")
       return
     }
+
+    if (dataTipo === "escolher" && !customData) {
+      setError("Escolha uma data")
+      return
+    }
+
+    const dataFinal = dataTipo === "escolher"
+      ? customData
+      : new Date().toISOString().split("T")[0]
 
     const newTask: Task = {
       id: uuidv4(),
@@ -32,6 +43,7 @@ export default function TaskModal({ onClose, onAdd }: Props) {
       tag,
       completed: false,
       createdAt: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+      data: dataFinal,
     }
 
     setLoading(true)
@@ -90,6 +102,36 @@ export default function TaskModal({ onClose, onAdd }: Props) {
           />
         </div>
 
+        {/* Data */}
+        <div className={styles.field}>
+          <label className={styles.label}>Data</label>
+          <div className={styles.pillGroup}>
+            <button
+              className={styles.pill}
+              style={dataTipo === "Indeterminado" ? { background: "rgba(99,102,241,0.15)", borderColor: "#6366f1", color: "#818cf8" } : {}}
+              onClick={() => setDataTipo("Indeterminado")}
+            >
+              Indeterminado
+            </button>
+            <button
+              className={styles.pill}
+              style={dataTipo === "escolher" ? { background: "rgba(99,102,241,0.15)", borderColor: "#6366f1", color: "#818cf8" } : {}}
+              onClick={() => setDataTipo("escolher")}
+            >
+              Escolher prazo
+            </button>
+          </div>
+          {dataTipo === "escolher" && (
+            <input
+              type="date"
+              className={styles.input}
+              style={{ marginTop: 8 }}
+              value={customData}
+              onChange={(e) => { setCustomData(e.target.value); setError("") }}
+            />
+          )}
+        </div>
+
         {/* Prioridade + Categoria */}
         <div className={styles.fieldRow}>
           <div className={styles.field} style={{ flex: 1 }}>
@@ -101,11 +143,7 @@ export default function TaskModal({ onClose, onAdd }: Props) {
                   <button
                     key={p}
                     className={styles.pill}
-                    style={
-                      priority === p
-                        ? { background: cfg.bg, borderColor: cfg.color, color: cfg.color }
-                        : {}
-                    }
+                    style={priority === p ? { background: cfg.bg, borderColor: cfg.color, color: cfg.color } : {}}
                     onClick={() => setPriority(p)}
                   >
                     {cfg.label}

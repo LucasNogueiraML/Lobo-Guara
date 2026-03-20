@@ -70,7 +70,7 @@
 /* ─── Summary Cards ───────────────────────────────────── */
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(10, 2fr);
   gap: 16px;
   margin-bottom: 28px;
 }

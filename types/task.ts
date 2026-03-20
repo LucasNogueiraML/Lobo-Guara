@@ -8,6 +8,7 @@ export type Task = {
   priority: Priority
   tag: string
   createdAt: string
+  data?: string
 }
 
 export type FilterType = "todas" | "pendentes" | "concluidas"

@@ -6,6 +6,7 @@ import styles from "./FinancePage.module.css"
 import TransactionCard from "@/./components/TransactionCard"
 import TransactionModal from "@/./components/TransactionModal"
 import { Transaction, FilterType, formatBRL } from "@/./types/finance"
+import { calcularPorMes, calcularPorCategoria, calcularPrevisao } from "@/app/api/lib/calculo"
 
 const FILTER_LABELS: { key: FilterType; label: string }[] = [
   { key: "todas",    label: "Todas"    },
@@ -18,6 +19,12 @@ export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [modalOpen, setModalOpen]       = useState(false)
   const [filter, setFilter]             = useState<FilterType>("todas")
+
+  const porMes       = calcularPorMes(transactions)
+  const porCategoria = calcularPorCategoria(transactions)
+  const previsao     = calcularPrevisao(transactions)
+  const mesAtual = new Date().toISOString().slice(0, 7)
+  const mes = previsao.find((m) => m.mesAno === mesAtual)
 
   useEffect(() => {
     const local = localStorage.getItem("transactions")
@@ -33,8 +40,13 @@ export default function FinancePage() {
       .catch(() => console.log("Usando dados locais"))
   }, [])
 
-  const totalReceitas = transactions.filter((t) => t.type === "receita").reduce((s, t) => s + t.amount, 0)
-  const totalDespesas = transactions.filter((t) => t.type === "despesa").reduce((s, t) => s + t.amount, 0)
+  const totalReceitas = transactions
+  .filter((t) => t.type === "receita")
+  .reduce((s, t) => s + Number(t.amount), 0)
+
+const totalDespesas = transactions
+  .filter((t) => t.type === "despesa")
+  .reduce((s, t) => s + Number(t.amount), 0)
 
   //const gastosPrevistos = transactions = transactions.filter
   const saldo = totalReceitas - totalDespesas
@@ -70,8 +82,7 @@ export default function FinancePage() {
 
       {/* Backgrounds */}
       <div className={styles.bg} />
-      <div className={styles.bgOrb1} />
-      <div className={styles.bgOrb2} />
+
 
       {/* Main */}
       <main className={styles.main}>
@@ -93,29 +104,29 @@ export default function FinancePage() {
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Saldo atual</p>
             <p className={`${styles.summaryValue} ${saldo >= 0 ? styles.summaryPositive : styles.summaryNegative}`}>
-              {formatBRL(saldo)}
+              {formatBRL(Math.abs(Number(saldo)))}
             </p>
             <p className={styles.summaryHint}>{saldo >= 0 ? "Você está no positivo 🎉" : "Atenção aos gastos ⚠️"}</p>
           </div>
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Total receitas</p>
-            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(totalReceitas)}</p>
+            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(Number(totalReceitas))}</p>
             <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "receita").length} entradas</p>
           </div>
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Total despesas</p>
-            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(totalDespesas)}</p>
+            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(Number(totalDespesas)  )}</p>
             <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "despesa").length} saídas</p>
           </div>
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Gastos Previstos neste mês</p>
-            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(totalDespesas)}</p>
-            <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "despesa").length} saídas</p>
+            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(Number(mes?.despesasPrevistas ?? 0))}</p>
+            <p className={styles.summaryHint}>{mes?.transacoes.filter(t => t.type === "despesa").length ?? 0} saídas previstas</p>
           </div>
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Receitas Previstas neste mês</p>
-            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(totalReceitas)}</p>
-            <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "receita").length} entradas</p>
+            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(Number(mes?.receitasPrevistas ?? 0))}</p>
+            <p className={styles.summaryHint}>{mes?.transacoes.filter(t => t.type === "receita").length ?? 0} entradas previstas</p>
           </div>
         </div>
 
