@@ -1,4 +1,4 @@
-/* ─── Layout ─────────────────────────────────────────── */
+/* â”€â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .page {
   min-height: 100vh;
   display: flex;
@@ -14,17 +14,43 @@
   z-index: 0;
 }
 
-/* ─── Main ────────────────────────────────────────────── */
+.bgOrb1 {
+  position: fixed;
+  top: -140px;
+  right: -110px;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0) 72%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bgOrb2 {
+  position: fixed;
+  bottom: -180px;
+  left: -120px;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.14) 0%, rgba(16, 185, 129, 0) 72%);
+  filter: blur(14px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* â”€â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .main {
   margin-left: 68px;
   flex: 1;
   padding: 40px 48px;
   position: relative;
   z-index: 1;
-  max-width: 860px;
+  max-width: 1320px;
 }
 
-/* ─── Header ─────────────────────────────────────────── */
+/* â”€â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .header {
   display: flex;
   align-items: flex-start;
@@ -80,7 +106,273 @@
   line-height: 1;
 }
 
-/* ─── Filters ─────────────────────────────────────────── */
+/* Analytics layout */
+.contentGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+  align-items: start;
+}
+
+.tasksColumn {
+  min-width: 0;
+}
+
+.statsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.statCard {
+  background: rgba(18, 24, 39, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+}
+
+.statHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.statTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.statSubtitle {
+  margin: 3px 0 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.statKpi {
+  font-size: 12px;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.xpValue {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: white;
+}
+
+.monthTimerMeta {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.monthTimerWrap {
+  margin-top: 8px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.monthTimerFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #06b6d4, #10b981);
+  transition: width 0.5s ease;
+}
+
+.paceBadge {
+  margin-top: 10px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pacePositive {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+}
+
+.paceNegative {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.paceNeutral {
+  background: rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #cbd5e1;
+}
+
+.kpiGrid {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kpiCell {
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kpiLabel {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.kpiValue {
+  margin: 4px 0 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.monthKpiRow {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.monthKpiCell {
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.monthKpiLabel {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.monthKpiValue {
+  margin: 4px 0 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.chartWrap {
+  width: 100%;
+  height: 220px;
+}
+
+.chartTallWrap {
+  width: 100%;
+  height: 260px;
+}
+
+.chartPlaceholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.pieLayout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pieWrap {
+  width: 170px;
+  height: 170px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.piePlaceholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pieCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pieCenter strong {
+  line-height: 1;
+  font-size: 24px;
+  color: white;
+}
+
+.pieCenter span {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.legendList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.legendLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.legendValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+}
+
+/* â”€â”€â”€ Filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .filters {
   display: flex;
   gap: 6px;
@@ -106,23 +398,49 @@
   color: #818cf8;
 }
 
-/* ─── Progress ────────────────────────────────────────── */
+/* â”€â”€â”€ Progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .progressWrap {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.06);
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 99px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   overflow: hidden;
 }
 
 .progressBar {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #34d399);
+  background: linear-gradient(90deg, #10b981, #6366f1);
   border-radius: 99px;
   transition: width 0.6s ease;
 }
 
-/* ─── Task list ───────────────────────────────────────── */
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+}
+
+.progressValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.progressHint {
+  margin: 0 0 20px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* â”€â”€â”€ Task list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .taskList {
   display: flex;
   flex-direction: column;
@@ -135,7 +453,7 @@
   color: var(--text-muted);
 }
 
-/* ─── Task Card ───────────────────────────────────────── */
+/* â”€â”€â”€ Task Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .taskCard {
   display: flex;
   align-items: center;
@@ -246,7 +564,7 @@
   color: #f87171;
 }
 
-/* ─── Modal ───────────────────────────────────────────── */
+/* â”€â”€â”€ Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .overlay {
   position: fixed;
   inset: 0;
@@ -308,7 +626,7 @@
   color: white;
 }
 
-/* ─── Form ────────────────────────────────────────────── */
+/* â”€â”€â”€ Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .field       { margin-bottom: 18px; }
 
 .label {
@@ -429,4 +747,46 @@
 .submitBtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
+}
+
+@media (max-width: 1120px) {
+  .main {
+    padding: 30px 24px;
+    max-width: none;
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+    padding: 22px 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .addBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fieldRow {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .pieLayout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pieWrap {
+    align-self: center;
+  }
 }

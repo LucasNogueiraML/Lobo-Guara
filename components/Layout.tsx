@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import styles from "./MenuInicial.module.css"
+import styles from "./Layout.module.css"
 import Image from "next/image"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -41,13 +41,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className={styles.container}>
       <aside className={styles.sideBar}>
         <button className={styles.iconButton} onClick={() => router.push("/")} title="Dashboard">
-          <img src="/dashboard.svg" alt="Dashboard" />
+          <Image src="/dashboard.svg" alt="Dashboard" width={20} height={20} className={styles.iconImg} />
         </button>
         <button className={styles.iconButton} onClick={() => router.push("/tarefas")} title="Tarefas">
-          <img src="/task.svg" alt="Tarefas" />
+          <Image src="/task.svg" alt="Tarefas" width={20} height={20} className={styles.iconImg} />
         </button>
         <button className={styles.iconButton} onClick={() => router.push("/financeiro")} title="Financeiro">
-          <img src="/money.svg" alt="Financeiro" />
+          <Image src="/money.svg" alt="Financeiro" width={20} height={20} className={styles.iconImg} />
         </button>
 
         {/* Spacer */}
@@ -69,7 +69,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       style={{ borderRadius: "50%" }}
     />
   ) : (
-    <img src="/user.svg" alt="Perfil" />
+    <Image src="/user.svg" alt="Perfil" width={20} height={20} className={styles.iconImg} />
   )}
 </button>
       </aside>

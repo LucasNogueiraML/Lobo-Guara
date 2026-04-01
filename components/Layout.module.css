@@ -1,0 +1,66 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+}
+
+.sideBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 68px;
+  height: 100vh;
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 14px;
+  gap: 8px;
+}
+
+.iconButton {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+  padding: 0;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.iconImg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.iconButton:hover .iconImg {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+.main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .sideBar {
+    width: 56px;
+  }
+}
