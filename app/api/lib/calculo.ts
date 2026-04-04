@@ -1,7 +1,7 @@
 import { Transaction } from "@/types/finance"
 import { Task } from "@/types/task"
 
-// ─── Utilitários de data ───────────────────────────────
+// â”€â”€â”€ UtilitÃ¡rios de data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function mesDeDate(date: string): number {
   return parseInt(date.split("-")[1], 10)
@@ -19,7 +19,7 @@ export function hoje(): string {
   return new Date().toISOString().split("T")[0]
 }
 
-// ─── 1. Totais por mês ────────────────────────────────
+// â”€â”€â”€ 1. Totais por mÃªs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ResumoMes = {
   mesAno: string
@@ -51,7 +51,7 @@ export function calcularPorMes(transactions: Transaction[]): ResumoMes[] {
   return Object.values(mapa).sort((a, b) => a.mesAno.localeCompare(b.mesAno))
 }
 
-// ─── 2. Totais por categoria ──────────────────────────
+// â”€â”€â”€ 2. Totais por categoria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ResumoCategoria = {
   category: string
@@ -78,7 +78,7 @@ export function calcularPorCategoria(transactions: Transaction[]): ResumoCategor
   return Object.values(mapa).sort((a, b) => b.total - a.total)
 }
 
-// ─── 3. Expansão de recorrência ───────────────────────
+// â”€â”€â”€ 3. ExpansÃ£o de recorrÃªncia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function expandirRecorrencia(t: Transaction, ate: string): Transaction[] {
   if (!t.recorrencia || !t.date) return []
@@ -131,7 +131,7 @@ function expandirRecorrencia(t: Transaction, ate: string): Transaction[] {
   return resultado
 }
 
-// ─── 4. Previsão dos próximos 3 meses ────────────────
+// â”€â”€â”€ 4. PrevisÃ£o dos prÃ³ximos 3 meses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type PrevisaoMes = {
   mesAno: string
@@ -143,12 +143,12 @@ export type PrevisaoMes = {
   transacoes: Transaction[]
 }
 
-export function calcularPrevisao(transactions: Transaction[]): PrevisaoMes[] {
+export function calcularPrevisao(transactions: Transaction[], meses = 3): PrevisaoMes[] {
   const hojeDate = new Date()
   const hojeStr  = hoje()
 
   const limite = new Date(hojeDate)
-  limite.setMonth(limite.getMonth() + 3)
+  limite.setMonth(limite.getMonth() + meses)
   const limiteStr = limite.toISOString().split("T")[0]
 
   const futuras = transactions.filter(
@@ -188,7 +188,7 @@ export function calcularPrevisao(transactions: Transaction[]): PrevisaoMes[] {
     mapa[chave].transacoes.push(t)
   }
 
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= meses; i++) {
     const d = new Date(hojeDate)
     d.setMonth(d.getMonth() + i)
     const chave = d.toISOString().slice(0, 7)
@@ -208,7 +208,7 @@ export function calcularPrevisao(transactions: Transaction[]): PrevisaoMes[] {
   return Object.values(mapa).sort((a, b) => a.mesAno.localeCompare(b.mesAno))
 }
 
-// ─── 5. Resumo geral (para o Dashboard) ──────────────
+// â”€â”€â”€ 5. Resumo geral (para o Dashboard) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ResumoGeral = {
   saldoAtual: number
@@ -246,8 +246,8 @@ export function calcularResumoGeral(transactions: Transaction[]): ResumoGeral {
     totalReceitas,
     totalDespesas,
     saldoPrevisto3Meses,
-    maiorDespesaCategoria: maiorDespesa?.category ?? "—",
-    maiorReceitaCategoria: maiorReceita?.category ?? "—",
+    maiorDespesaCategoria: maiorDespesa?.category ?? "â€”",
+    maiorReceitaCategoria: maiorReceita?.category ?? "â€”",
   }
 }
 export function calcularResumoTarefas(tasks: Task[]) {

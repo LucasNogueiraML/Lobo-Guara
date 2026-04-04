@@ -53,6 +53,18 @@
   transform: scale(1.06);
 }
 
+.iconEmoji {
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.iconButton:hover .iconEmoji {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
 .main {
   position: relative;
   flex: 1;

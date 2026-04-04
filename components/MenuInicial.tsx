@@ -521,7 +521,7 @@ export default function MenuInicial() {
 
           <section
             className={`${styles.card} ${styles.cardD} ${styles.clickableCard}`}
-            onClick={() => router.push("/financeiro")}
+            onClick={() => router.push("/simulacao")}
           >
             <div className={styles.cardHeader}>
               <div>

@@ -1,35 +1,46 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 import styles from "./FinancePage.module.css"
 import TransactionCard from "@/./components/TransactionCard"
 import TransactionModal from "@/./components/TransactionModal"
 import { Transaction, FilterType, formatBRL } from "@/./types/finance"
-import { calcularPorMes, calcularPorCategoria, calcularPrevisao } from "@/app/api/lib/calculo"
+import { calcularPrevisao, calcularResumoGeral } from "@/app/api/lib/calculo"
 
 const FILTER_LABELS: { key: FilterType; label: string }[] = [
-  { key: "todas",    label: "Todas"    },
+  { key: "todas", label: "Todas" },
   { key: "receitas", label: "Receitas" },
   { key: "despesas", label: "Despesas" },
 ]
 
 export default function FinancePage() {
-  const router = useRouter()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [modalOpen, setModalOpen]       = useState(false)
-  const [filter, setFilter]             = useState<FilterType>("todas")
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    if (typeof window === "undefined") return []
 
-  const porMes       = calcularPorMes(transactions)
-  const porCategoria = calcularPorCategoria(transactions)
-  const previsao     = calcularPrevisao(transactions)
+    try {
+      const local = window.localStorage.getItem("transactions")
+      const parsed = local ? JSON.parse(local) : []
+      return Array.isArray(parsed) ? (parsed as Transaction[]) : []
+    } catch {
+      return []
+    }
+  })
+  const [modalOpen, setModalOpen] = useState(false)
+  const [filter, setFilter] = useState<FilterType>("todas")
+
+  const resumoFinanceiro = useMemo(() => calcularResumoGeral(transactions), [transactions])
+  const previsao = useMemo(() => calcularPrevisao(transactions), [transactions])
+
   const mesAtual = new Date().toISOString().slice(0, 7)
   const mes = previsao.find((m) => m.mesAno === mesAtual)
+  const hojeStr = new Date().toISOString().split("T")[0]
+
+  const transacoesPassadas = useMemo(
+    () => transactions.filter((transaction) => transaction.date && transaction.date <= hojeStr),
+    [transactions, hojeStr]
+  )
 
   useEffect(() => {
-    const local = localStorage.getItem("transactions")
-    if (local) setTransactions(JSON.parse(local))
-
     fetch("/api/financeiro")
       .then((res) => res.json())
       .then((data) => {
@@ -40,30 +51,24 @@ export default function FinancePage() {
       .catch(() => console.log("Usando dados locais"))
   }, [])
 
-  const totalReceitas = transactions
-  .filter((t) => t.type === "receita")
-  .reduce((s, t) => s + Number(t.amount), 0)
+  const totalReceitas = resumoFinanceiro.totalReceitas
+  const totalDespesas = resumoFinanceiro.totalDespesas
+  const saldo = resumoFinanceiro.saldoAtual
 
-const totalDespesas = transactions
-  .filter((t) => t.type === "despesa")
-  .reduce((s, t) => s + Number(t.amount), 0)
-
-  //const gastosPrevistos = transactions = transactions.filter
-  const saldo = totalReceitas - totalDespesas
-
-  const filtered = transactions.filter((t) => {
-    if (filter === "receitas") return t.type === "receita"
-    if (filter === "despesas") return t.type === "despesa"
+  const filtered = transactions.filter((transaction) => {
+    if (filter === "receitas") return transaction.type === "receita"
+    if (filter === "despesas") return transaction.type === "despesa"
     return true
   })
 
-  async function handleAdd(t: Transaction) {
+  async function handleAdd(transaction: Transaction) {
     await fetch("/api/financeiro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(t),
+      body: JSON.stringify(transaction),
     })
-    const updated = [t, ...transactions]
+
+    const updated = [transaction, ...transactions]
     setTransactions(updated)
     localStorage.setItem("transactions", JSON.stringify(updated))
   }
@@ -74,63 +79,76 @@ const totalDespesas = transactions
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     })
-    setTransactions((prev) => prev.filter((t) => t.id !== id))
+
+    setTransactions((prev) => {
+      const updated = prev.filter((transaction) => transaction.id !== id)
+      localStorage.setItem("transactions", JSON.stringify(updated))
+      return updated
+    })
   }
 
   return (
     <div className={styles.page}>
-
-      {/* Backgrounds */}
       <div className={styles.bg} />
 
-
-      {/* Main */}
       <main className={styles.main}>
-
-        {/* Header */}
         <header className={styles.header}>
           <div>
             <h1 className={styles.pageTitle}>Financeiro</h1>
-            <p className={styles.pageSubtitle}>Março 2025</p>
+            <p className={styles.pageSubtitle}>Marco 2025</p>
           </div>
           <button className={styles.addBtn} onClick={() => setModalOpen(true)}>
             <span className={styles.addIcon}>+</span>
-            Nova transação
+            Nova transacao
           </button>
         </header>
 
-        {/* Cards de resumo */}
         <div className={styles.summaryGrid}>
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Saldo atual</p>
             <p className={`${styles.summaryValue} ${saldo >= 0 ? styles.summaryPositive : styles.summaryNegative}`}>
               {formatBRL(Math.abs(Number(saldo)))}
             </p>
-            <p className={styles.summaryHint}>{saldo >= 0 ? "Você está no positivo 🎉" : "Atenção aos gastos ⚠️"}</p>
+            <p className={styles.summaryHint}>{saldo >= 0 ? "Voce esta no positivo" : "Atencao aos gastos"}</p>
           </div>
+
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Total receitas</p>
             <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(Number(totalReceitas))}</p>
-            <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "receita").length} entradas</p>
+            <p className={styles.summaryHint}>
+              {transacoesPassadas.filter((transaction) => transaction.type === "receita").length} entradas realizadas
+            </p>
           </div>
+
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Total despesas</p>
-            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(Number(totalDespesas)  )}</p>
-            <p className={styles.summaryHint}>{transactions.filter((t) => t.type === "despesa").length} saídas</p>
+            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(Number(totalDespesas))}</p>
+            <p className={styles.summaryHint}>
+              {transacoesPassadas.filter((transaction) => transaction.type === "despesa").length} saidas realizadas
+            </p>
           </div>
+
           <div className={styles.summaryCard}>
-            <p className={styles.summaryLabel}>Gastos Previstos neste mês</p>
-            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(Number(mes?.despesasPrevistas ?? 0))}</p>
-            <p className={styles.summaryHint}>{mes?.transacoes.filter(t => t.type === "despesa").length ?? 0} saídas previstas</p>
+            <p className={styles.summaryLabel}>Gastos previstos neste mes</p>
+            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>
+              {formatBRL(Number(mes?.despesasPrevistas ?? 0))}
+            </p>
+            <p className={styles.summaryHint}>
+              {mes?.transacoes.filter((transaction) => transaction.type === "despesa").length ?? 0} saidas previstas
+            </p>
           </div>
+
           <div className={styles.summaryCard}>
-            <p className={styles.summaryLabel}>Receitas Previstas neste mês</p>
-            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(Number(mes?.receitasPrevistas ?? 0))}</p>
-            <p className={styles.summaryHint}>{mes?.transacoes.filter(t => t.type === "receita").length ?? 0} entradas previstas</p>
+            <p className={styles.summaryLabel}>Receitas previstas neste mes</p>
+            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>
+              {formatBRL(Number(mes?.receitasPrevistas ?? 0))}
+            </p>
+            <p className={styles.summaryHint}>
+              {mes?.transacoes.filter((transaction) => transaction.type === "receita").length ?? 0} entradas previstas
+            </p>
           </div>
         </div>
 
-        {/* Filtros */}
         <div className={styles.filters}>
           {FILTER_LABELS.map(({ key, label }) => (
             <button
@@ -143,27 +161,21 @@ const totalDespesas = transactions
           ))}
         </div>
 
-        {/* Lista */}
         <div className={styles.transactionList}>
           {filtered.length === 0 ? (
             <div className={styles.empty}>
-              <span style={{ fontSize: 40 }}>💸</span>
-              <p>Nenhuma transação aqui!</p>
+              <span style={{ fontSize: 40 }}>$</span>
+              <p>Nenhuma transacao aqui!</p>
             </div>
           ) : (
-            filtered.map((t) => (
-              <TransactionCard key={t.id} transaction={t} onDelete={handleDelete} />
+            filtered.map((transaction) => (
+              <TransactionCard key={transaction.id} transaction={transaction} onDelete={handleDelete} />
             ))
           )}
         </div>
-
       </main>
 
-      {/* Modal */}
-      {modalOpen && (
-        <TransactionModal onClose={() => setModalOpen(false)} onAdd={handleAdd} />
-      )}
-
+      {modalOpen && <TransactionModal onClose={() => setModalOpen(false)} onAdd={handleAdd} />}
     </div>
   )
 }

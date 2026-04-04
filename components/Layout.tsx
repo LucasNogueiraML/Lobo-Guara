@@ -49,11 +49,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <button className={styles.iconButton} onClick={() => router.push("/financeiro")} title="Financeiro">
           <Image src="/money.svg" alt="Financeiro" width={20} height={20} className={styles.iconImg} />
         </button>
+        <button className={styles.iconButton} onClick={() => router.push("/simulacao")} title="SimulaÃ§Ã£o">
+          <span className={styles.iconEmoji}>â°</span>
+        </button>
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Botão de perfil — foto do Google ou ícone padrão */}
+        {/* BotÃ£o de perfil â€” foto do Google ou Ã­cone padrÃ£o */}
        <button
   className={styles.iconButton}
   onClick={() => setPerfilOpen(true)}
@@ -113,7 +116,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}
               <div>
                 <p style={{ color: "white", fontWeight: 700, fontSize: 18, margin: 0 }}>
-                  {session?.user?.name ?? "Usuário"}
+                  {session?.user?.name ?? "UsuÃ¡rio"}
                 </p>
                 <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: "4px 0 0" }}>
                   {session?.user?.email}
@@ -132,7 +135,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             }}>
               <div>
                 <p style={{ color: "white", fontSize: 14, fontWeight: 500, margin: 0 }}>
-                  {tema === "escuro" ? "🌙 Tema escuro" : "☀️ Tema claro"}
+                  {tema === "escuro" ? "ðŸŒ™ Tema escuro" : "â˜€ï¸ Tema claro"}
                 </p>
                 <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, margin: "2px 0 0" }}>
                   Clique para alternar
