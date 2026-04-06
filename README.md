@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lobo Guara
 
-## Getting Started
+Dashboard com tarefas, financeiro, simulação e previsão.
 
-First, run the development server:
+## Rodar local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## PWA
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O projeto já está preparado como PWA:
 
-## Learn More
+- Manifest: `public/manifest.webmanifest`
+- Service worker: `public/sw.js`
+- Ícones: `public/icons/*`
+- Página offline: `app/offline/page.tsx`
 
-To learn more about Next.js, take a look at the following resources:
+Em produção (Render + HTTPS), o navegador já permite instalar o app.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Android APK (Capacitor)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 1. Configure a URL do app hospedado
 
-## Deploy on Vercel
+Use seu domínio do Render:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# PowerShell
+$env:CAPACITOR_APP_URL="https://seu-app.onrender.com"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Você pode usar `.env.example` como referência.
+Se você não definir essa variável, o padrão atual é `https://lobo-guara.onrender.com`.
+
+### 2. Sincronize com Android
+
+```bash
+npm run cap:sync
+```
+
+### 3. Abra no Android Studio
+
+```bash
+npm run cap:open:android
+```
+
+No Android Studio, gere o APK em:
+`Build > Build Bundle(s) / APK(s) > Build APK(s)`
+
+## Scripts úteis
+
+- `npm run lint`
+- `npm run build`
+- `npm run cap:add:android`
+- `npm run cap:sync`
+- `npm run cap:copy`
+- `npm run cap:open:android`

@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout"
 import Providers from "./providers"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 
@@ -15,8 +15,32 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Meu App",
-  description: "Dashboard com sidebar fixa",
+  title: "Lobo Guara",
+  description: "Dashboard com tarefas e financeiro",
+  applicationName: "Lobo Guara",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Lobo Guara",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f172a",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
