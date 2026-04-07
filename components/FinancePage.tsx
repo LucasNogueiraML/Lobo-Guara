@@ -1,17 +1,23 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState } from "react"
-import styles from "./FinancePage.module.css"
-import TransactionCard from "@/./components/TransactionCard"
-import TransactionModal from "@/./components/TransactionModal"
-import { Transaction, FilterType, formatBRL } from "@/./types/finance"
+
 import { calcularPrevisao, calcularResumoGeral } from "@/app/api/lib/calculo"
+import { usePrivacyMode } from "@/lib/privacyMode"
+import TransactionCard from "@/components/TransactionCard"
+import TransactionModal from "@/components/TransactionModal"
+import { FilterType, Transaction, formatBRL } from "@/types/finance"
+import styles from "./FinancePage.module.css"
 
 const FILTER_LABELS: { key: FilterType; label: string }[] = [
   { key: "todas", label: "Todas" },
   { key: "receitas", label: "Receitas" },
   { key: "despesas", label: "Despesas" },
 ]
+
+function monthLabel(date: Date): string {
+  return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(date)
+}
 
 export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
@@ -25,19 +31,21 @@ export default function FinancePage() {
       return []
     }
   })
+
   const [modalOpen, setModalOpen] = useState(false)
   const [filter, setFilter] = useState<FilterType>("todas")
+  const privacyEnabled = usePrivacyMode()
 
   const resumoFinanceiro = useMemo(() => calcularResumoGeral(transactions), [transactions])
   const previsao = useMemo(() => calcularPrevisao(transactions), [transactions])
 
   const mesAtual = new Date().toISOString().slice(0, 7)
-  const mes = previsao.find((m) => m.mesAno === mesAtual)
+  const mes = previsao.find((item) => item.mesAno === mesAtual)
   const hojeStr = new Date().toISOString().split("T")[0]
 
   const transacoesPassadas = useMemo(
     () => transactions.filter((transaction) => transaction.date && transaction.date <= hojeStr),
-    [transactions, hojeStr]
+    [transactions, hojeStr],
   )
 
   useEffect(() => {
@@ -48,7 +56,7 @@ export default function FinancePage() {
         setTransactions(list)
         localStorage.setItem("transactions", JSON.stringify(list))
       })
-      .catch(() => console.log("Usando dados locais"))
+      .catch(() => {})
   }, [])
 
   const totalReceitas = resumoFinanceiro.totalReceitas
@@ -60,6 +68,10 @@ export default function FinancePage() {
     if (filter === "despesas") return transaction.type === "despesa"
     return true
   })
+
+  function formatMoney(value: number): string {
+    return privacyEnabled ? "****" : formatBRL(Number(value))
+  }
 
   async function handleAdd(transaction: Transaction) {
     await fetch("/api/financeiro", {
@@ -95,7 +107,7 @@ export default function FinancePage() {
         <header className={styles.header}>
           <div>
             <h1 className={styles.pageTitle}>Financeiro</h1>
-            <p className={styles.pageSubtitle}>Marco 2025</p>
+            <p className={styles.pageSubtitle}>{monthLabel(new Date())}</p>
           </div>
           <button className={styles.addBtn} onClick={() => setModalOpen(true)}>
             <span className={styles.addIcon}>+</span>
@@ -107,14 +119,14 @@ export default function FinancePage() {
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Saldo atual</p>
             <p className={`${styles.summaryValue} ${saldo >= 0 ? styles.summaryPositive : styles.summaryNegative}`}>
-              {formatBRL(Math.abs(Number(saldo)))}
+              {formatMoney(Math.abs(Number(saldo)))}
             </p>
             <p className={styles.summaryHint}>{saldo >= 0 ? "Voce esta no positivo" : "Atencao aos gastos"}</p>
           </div>
 
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Total receitas</p>
-            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatBRL(Number(totalReceitas))}</p>
+            <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>{formatMoney(Number(totalReceitas))}</p>
             <p className={styles.summaryHint}>
               {transacoesPassadas.filter((transaction) => transaction.type === "receita").length} entradas realizadas
             </p>
@@ -122,7 +134,7 @@ export default function FinancePage() {
 
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Total despesas</p>
-            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatBRL(Number(totalDespesas))}</p>
+            <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>{formatMoney(Number(totalDespesas))}</p>
             <p className={styles.summaryHint}>
               {transacoesPassadas.filter((transaction) => transaction.type === "despesa").length} saidas realizadas
             </p>
@@ -131,7 +143,7 @@ export default function FinancePage() {
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Gastos previstos neste mes</p>
             <p className={`${styles.summaryValue} ${styles.summaryNegative}`}>
-              {formatBRL(Number(mes?.despesasPrevistas ?? 0))}
+              {formatMoney(Number(mes?.despesasPrevistas ?? 0))}
             </p>
             <p className={styles.summaryHint}>
               {mes?.transacoes.filter((transaction) => transaction.type === "despesa").length ?? 0} saidas previstas
@@ -141,7 +153,7 @@ export default function FinancePage() {
           <div className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Receitas previstas neste mes</p>
             <p className={`${styles.summaryValue} ${styles.summaryPositive}`}>
-              {formatBRL(Number(mes?.receitasPrevistas ?? 0))}
+              {formatMoney(Number(mes?.receitasPrevistas ?? 0))}
             </p>
             <p className={styles.summaryHint}>
               {mes?.transacoes.filter((transaction) => transaction.type === "receita").length ?? 0} entradas previstas

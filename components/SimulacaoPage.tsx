@@ -14,6 +14,7 @@ import {
 } from "recharts"
 
 import styles from "./SimulacaoPage.module.css"
+import { usePrivacyMode } from "@/lib/privacyMode"
 import {
   CATEGORIES_DESPESA,
   CATEGORIES_RECEITA,
@@ -99,6 +100,7 @@ function toMonthLabel(mesAno: string): string {
 }
 
 export default function SimulacaoPage() {
+  const privacyEnabled = usePrivacyMode()
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     if (typeof window === "undefined") return []
 
@@ -152,6 +154,15 @@ export default function SimulacaoPage() {
   const [amount, setAmount] = useState("")
   const [startMonth, setStartMonth] = useState(() => monthFromDate(new Date()))
   const [durationMonths, setDurationMonths] = useState("12")
+
+  function formatCurrencyForUI(value: number): string {
+    return privacyEnabled ? "****" : formatBRL(value)
+  }
+
+  function formatSignedForUI(value: number): string {
+    if (privacyEnabled) return value >= 0 ? "+ ****" : "- ****"
+    return formatSignedCurrency(value)
+  }
 
   useEffect(() => {
     fetch("/api/financeiro")
@@ -359,7 +370,7 @@ export default function SimulacaoPage() {
               <p className={styles.heroHint}>Saldo acumulado base vs simulado com overlay transparente</p>
             </div>
             <span className={`${styles.impactBadge} ${summary.impactoTotal >= 0 ? styles.impactPositive : styles.impactNegative}`}>
-              Impacto total: {formatSignedCurrency(summary.impactoTotal)}
+              Impacto total: {formatSignedForUI(summary.impactoTotal)}
             </span>
           </div>
 
@@ -379,7 +390,9 @@ export default function SimulacaoPage() {
                     tickLine={false}
                     axisLine={false}
                     width={64}
-                    tickFormatter={(value) => formatBRL(Number(value)).replace("R$", "")}
+                    tickFormatter={(value) =>
+                      privacyEnabled ? "****" : formatBRL(Number(value)).replace("R$", "")
+                    }
                   />
                   <Tooltip
                     contentStyle={{
@@ -390,9 +403,9 @@ export default function SimulacaoPage() {
                     }}
                     formatter={(value, name) => {
                       const numericValue = typeof value === "number" ? value : Number(value) || 0
-                      if (name === "Impacto") return [formatSignedCurrency(numericValue), "Impacto"]
-                      if (name === "Juros") return [formatBRL(numericValue), "Juros"]
-                      return [formatBRL(numericValue), String(name)]
+                      if (name === "Impacto") return [formatSignedForUI(numericValue), "Impacto"]
+                      if (name === "Juros") return [formatCurrencyForUI(numericValue), "Juros"]
+                      return [formatCurrencyForUI(numericValue), String(name)]
                     }}
                   />
                   <Bar
@@ -447,30 +460,30 @@ export default function SimulacaoPage() {
         <section className={styles.summaryGrid}>
           <article className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Gastos (antes/depois)</p>
-            <p className={styles.summaryValue}>{formatBRL(summary.totalGastosAntes)}</p>
-            <p className={styles.summaryCompare}>Depois: {formatBRL(summary.totalGastosDepois)}</p>
+            <p className={styles.summaryValue}>{formatCurrencyForUI(summary.totalGastosAntes)}</p>
+            <p className={styles.summaryCompare}>Depois: {formatCurrencyForUI(summary.totalGastosDepois)}</p>
           </article>
 
           <article className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Ganhos (antes/depois)</p>
-            <p className={styles.summaryValue}>{formatBRL(summary.totalGanhosAntes)}</p>
-            <p className={styles.summaryCompare}>Depois: {formatBRL(summary.totalGanhosDepois)}</p>
+            <p className={styles.summaryValue}>{formatCurrencyForUI(summary.totalGanhosAntes)}</p>
+            <p className={styles.summaryCompare}>Depois: {formatCurrencyForUI(summary.totalGanhosDepois)}</p>
           </article>
 
           <article className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Saldo (antes/depois)</p>
             <p className={`${styles.summaryValue} ${summary.saldoAntes >= 0 ? styles.positive : styles.negative}`}>
-              {formatBRL(summary.saldoAntes)}
+              {formatCurrencyForUI(summary.saldoAntes)}
             </p>
             <p className={`${styles.summaryCompare} ${summary.saldoDepois >= 0 ? styles.positive : styles.negative}`}>
-              Depois: {formatBRL(summary.saldoDepois)}
+              Depois: {formatCurrencyForUI(summary.saldoDepois)}
             </p>
           </article>
 
           <article className={styles.summaryCard}>
             <p className={styles.summaryLabel}>Investimentos (juros compostos)</p>
-            <p className={styles.summaryValue}>{formatBRL(summary.patrimonioFinal)}</p>
-            <p className={styles.summaryCompare}>Juros acumulados: {formatBRL(summary.jurosTotal)}</p>
+            <p className={styles.summaryValue}>{formatCurrencyForUI(summary.patrimonioFinal)}</p>
+            <p className={styles.summaryCompare}>Juros acumulados: {formatCurrencyForUI(summary.jurosTotal)}</p>
           </article>
         </section>
 
@@ -627,7 +640,7 @@ export default function SimulacaoPage() {
                     </div>
                     <div className={styles.simRight}>
                       <strong className={item.type === "receita" ? styles.positive : styles.negative}>
-                        {formatSignedCurrency(item.amount)}
+                        {formatSignedForUI(item.amount)}
                       </strong>
                       <button className={styles.deleteBtn} onClick={() => handleDeleteSimulation(item.id)}>
                         Remover

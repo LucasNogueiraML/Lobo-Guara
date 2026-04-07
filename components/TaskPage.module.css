@@ -790,3 +790,269 @@
     align-self: center;
   }
 }
+
+/* Rotina page */
+.rotinaLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rotinaOverviewCard {
+  background: rgba(18, 24, 39, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(6px);
+}
+
+.rotinaOverviewHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.rotinaOverviewTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rotinaOverviewSubtitle {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.rotinaLegend {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rotinaLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rotinaLegendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.rotinaKpiGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+
+.rotinaKpiCard {
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rotinaKpiLabel {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.rotinaKpiValue {
+  margin: 4px 0 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.rotinaHeatmap {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotinaHeatmapHead {
+  display: grid;
+  grid-template-columns: minmax(100px, 170px) minmax(0, 1fr) 58px;
+  gap: 10px;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.rotinaHeatmapHeadLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.rotinaDayAxis {
+  display: grid;
+  grid-template-columns: repeat(31, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.rotinaDayAxisTick {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.rotinaHeatmapRow {
+  display: grid;
+  grid-template-columns: minmax(100px, 170px) minmax(0, 1fr) 58px;
+  gap: 10px;
+  align-items: center;
+}
+
+.rotinaHeatmapInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rotinaHeatmapTitle {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rotinaHeatmapStreak {
+  font-size: 11px;
+  color: #93c5fd;
+}
+
+.rotinaDotGrid {
+  display: grid;
+  grid-template-columns: repeat(31, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.rotinaDot {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 3px;
+  min-height: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rotinaDotDone {
+  background: linear-gradient(135deg, #22c55e, #34d399);
+  border-color: rgba(52, 211, 153, 0.65);
+}
+
+.rotinaDotMiss {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.rotinaDotFuture {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.rotinaMonthCount {
+  font-size: 12px;
+  text-align: right;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.rotinaStreakBoard {
+  background: rgba(18, 24, 39, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.rotinaStreakGrid {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.rotinaStreakCard {
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rotinaRankTag {
+  min-width: 30px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.rotinaRankTitle {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rotinaRankValue {
+  font-size: 12px;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+@media (max-width: 1120px) {
+  .rotinaKpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .rotinaOverviewCard {
+    padding: 12px;
+  }
+
+  .rotinaKpiGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rotinaHeatmapHead,
+  .rotinaHeatmapRow {
+    grid-template-columns: minmax(92px, 110px) minmax(0, 1fr) 44px;
+    gap: 8px;
+  }
+
+  .rotinaDayAxis,
+  .rotinaDotGrid {
+    gap: 3px;
+  }
+
+  .rotinaDot {
+    min-height: 6px;
+  }
+}

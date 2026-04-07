@@ -20,6 +20,7 @@ import {
 
 import styles from "./MenuInicial.module.css"
 import { calcularPorCategoria, calcularPrevisao, calcularResumoGeral, calcularResumoTarefas } from "@/app/api/lib/calculo"
+import { usePrivacyMode } from "@/lib/privacyMode"
 import { Transaction, formatBRL } from "@/types/finance"
 import { Task } from "@/types/task"
 
@@ -124,6 +125,7 @@ function formatSignedCurrency(value: number): string {
 export default function MenuInicial() {
   const router = useRouter()
   const { data: session } = useSession()
+  const privacyEnabled = usePrivacyMode()
 
   const [tasks, setTasks] = useState<Task[]>(() => {
     if (typeof window === "undefined") return []
@@ -194,6 +196,11 @@ export default function MenuInicial() {
     if (hour < 18) return "Boa tarde"
     return "Boa noite"
   }, [])
+
+  function formatSignedCurrencyForUI(value: number): string {
+    if (privacyEnabled) return "****"
+    return formatSignedCurrency(value)
+  }
 
   const analytics = useMemo(() => {
     const now = new Date()
@@ -394,7 +401,9 @@ export default function MenuInicial() {
                 <h3 className={styles.cardTitle}>Finance Ops</h3>
                 <p className={styles.cardHint}>Receita, despesa e saldo dos ultimos 6 meses</p>
               </div>
-              <span className={styles.kpiMain}>{formatSignedCurrency(resumoFinanceiro.saldoAtual)}</span>
+              <span className={styles.kpiMain}>
+                {privacyEnabled ? "****" : formatSignedCurrencyForUI(resumoFinanceiro.saldoAtual)}
+              </span>
             </div>
 
             <div className={styles.kpiGrid}>
@@ -413,7 +422,7 @@ export default function MenuInicial() {
               <div className={styles.kpiItem}>
                 <p className={styles.kpiLabel}>Delta mensal</p>
                 <p className={`${styles.kpiValue} ${analytics.saldoDelta >= 0 ? styles.positive : styles.negative}`}>
-                  {formatSignedCurrency(analytics.saldoDelta)}
+                  {formatSignedCurrencyForUI(analytics.saldoDelta)}
                 </p>
               </div>
             </div>
@@ -429,7 +438,9 @@ export default function MenuInicial() {
                       tickLine={false}
                       axisLine={false}
                       width={56}
-                      tickFormatter={(value) => formatBRL(Number(value)).replace("R$", "")}
+                      tickFormatter={(value) =>
+                        privacyEnabled ? "****" : formatBRL(Number(value)).replace("R$", "")
+                      }
                     />
                     <Tooltip
                       contentStyle={{
@@ -440,7 +451,7 @@ export default function MenuInicial() {
                       }}
                       formatter={(value, name) => {
                         const numericValue = typeof value === "number" ? value : Number(value) || 0
-                        return [formatBRL(numericValue), String(name)]
+                        return [privacyEnabled ? "****" : formatBRL(numericValue), String(name)]
                       }}
                     />
                     <Bar name="Receitas" dataKey="receitas" fill="#22c55e" radius={[6, 6, 0, 0]} />
@@ -541,7 +552,9 @@ export default function MenuInicial() {
                       tickLine={false}
                       axisLine={false}
                       width={56}
-                      tickFormatter={(value) => formatBRL(Number(value)).replace("R$", "")}
+                      tickFormatter={(value) =>
+                        privacyEnabled ? "****" : formatBRL(Number(value)).replace("R$", "")
+                      }
                     />
                     <Tooltip
                       contentStyle={{
@@ -552,7 +565,7 @@ export default function MenuInicial() {
                       }}
                       formatter={(value) => {
                         const numericValue = typeof value === "number" ? value : Number(value) || 0
-                        return [formatBRL(numericValue), "Saldo"]
+                        return [privacyEnabled ? "****" : formatBRL(numericValue), "Saldo"]
                       }}
                     />
                     <Bar dataKey="saldo" radius={[8, 8, 0, 0]}>
@@ -604,7 +617,7 @@ export default function MenuInicial() {
                         }}
                         formatter={(value) => {
                           const numericValue = typeof value === "number" ? value : Number(value) || 0
-                          return [formatBRL(numericValue), "Despesa"]
+                          return [privacyEnabled ? "****" : formatBRL(numericValue), "Despesa"]
                         }}
                       />
                       <Bar dataKey="total" fill="#f97316" radius={[0, 8, 8, 0]} />

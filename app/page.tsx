@@ -1,5 +1,5 @@
-import MenuInicial from "@/components/MenuInicial"
+import HomeStart from "@/components/HomeStart"
 
 export default function Home() {
-  return <MenuInicial/>
+  return <HomeStart />
 }

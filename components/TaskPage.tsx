@@ -19,7 +19,6 @@ import {
 import styles from "./TaskPage.module.css"
 import TaskCard from "@/components/TaskCard"
 import TaskModal from "@/components/TaskModal"
-import RotinaView from "@/components/RotinaView"
 import { FilterType, Task } from "@/types/task"
 
 const MONTH_LABELS = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"]
@@ -146,7 +145,7 @@ export default function TaskPage() {
   })
   const [modalOpen, setModalOpen] = useState(false)
   const [filter, setFilter] = useState<FilterType>("todas")
-  const [view, setView] = useState<"tarefas" | "rotina">("tarefas")
+  const view = "tarefas" as const
   const [chartsReady, setChartsReady] = useState(false)
 
   useEffect(() => {
@@ -358,13 +357,7 @@ export default function TaskPage() {
       <main className={styles.main}>
         <header className={styles.header}>
           <div>
-            <h1
-              className={styles.pageTitle}
-              onClick={() => setView((current) => (current === "tarefas" ? "rotina" : "tarefas"))}
-              style={{ cursor: "pointer", userSelect: "none" }}
-            >
-              {view === "tarefas" ? "Tarefas v" : "Rotina v"}
-            </h1>
+            <h1 className={styles.pageTitle}>Tarefas</h1>
 
             {view === "tarefas" && (
               <p className={styles.pageSubtitle}>
@@ -760,7 +753,6 @@ export default function TaskPage() {
           </div>
         )}
 
-        {view === "rotina" && <RotinaView />}
       </main>
 
       {modalOpen && <TaskModal onClose={() => setModalOpen(false)} onAdd={handleAdd} />}
