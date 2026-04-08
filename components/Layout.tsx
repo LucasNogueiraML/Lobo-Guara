@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 
 import { PRIVACY_STORAGE_KEY, readPrivacyMode, writePrivacyMode } from "@/lib/privacyMode"
@@ -15,10 +15,12 @@ type UserPrefsPayload = {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { data: session } = useSession()
   const [perfilOpen, setPerfilOpen] = useState(false)
   const [tema, setTema] = useState<"escuro" | "claro">("escuro")
   const [privacidade, setPrivacidade] = useState(false)
+  const hideSidebar = pathname === "/"
 
   useEffect(() => {
     if (!session?.user?.email) return
@@ -75,42 +77,44 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={styles.container}>
-      <aside className={styles.sideBar}>
-        <button className={styles.iconButton} onClick={() => router.push("/dashboard")} title="Dashboard">
-          <Image src="/dashboard.svg" alt="Dashboard" width={20} height={20} className={styles.iconImg} />
-        </button>
+      {!hideSidebar && (
+        <aside className={styles.sideBar}>
+          <button className={styles.iconButton} onClick={() => router.push("/dashboard")} title="Dashboard">
+            <Image src="/dashboard.svg" alt="Dashboard" width={20} height={20} className={styles.iconImg} />
+          </button>
 
-        <button className={styles.iconButton} onClick={() => router.push("/tarefas")} title="Tarefas">
-          <Image src="/task.svg" alt="Tarefas" width={20} height={20} className={styles.iconImg} />
-        </button>
+          <button className={styles.iconButton} onClick={() => router.push("/tarefas")} title="Tarefas">
+            <Image src="/task.svg" alt="Tarefas" width={20} height={20} className={styles.iconImg} />
+          </button>
 
-        <button className={styles.iconButton} onClick={() => router.push("/rotina")} title="Rotinas">
-          <span className={styles.iconEmoji}>🔁</span>
-        </button>
+          <button className={styles.iconButton} onClick={() => router.push("/rotina")} title="Rotinas">
+            <span className={styles.iconEmoji}>🔁</span>
+          </button>
 
-        <button className={styles.iconButton} onClick={() => router.push("/financeiro")} title="Financeiro">
-          <Image src="/money.svg" alt="Financeiro" width={20} height={20} className={styles.iconImg} />
-        </button>
+          <button className={styles.iconButton} onClick={() => router.push("/financeiro")} title="Financeiro">
+            <Image src="/money.svg" alt="Financeiro" width={20} height={20} className={styles.iconImg} />
+          </button>
 
-        <button className={styles.iconButton} onClick={() => router.push("/simulacao")} title="Simulacao">
-          <span className={styles.iconEmoji}>⏰</span>
-        </button>
+          <button className={styles.iconButton} onClick={() => router.push("/simulacao")} title="Simulacao">
+            <span className={styles.iconEmoji}>⏰</span>
+          </button>
 
-        <div style={{ flex: 1 }} />
+          <div style={{ flex: 1 }} />
 
-        <button
-          className={styles.iconButton}
-          onClick={() => setPerfilOpen(true)}
-          title="Perfil"
-          style={{ marginBottom: 12 }}
-        >
-          {session?.user?.image ? (
-            <Image src={session.user.image} alt="Perfil" width={32} height={32} style={{ borderRadius: "50%" }} />
-          ) : (
-            <Image src="/user.svg" alt="Perfil" width={20} height={20} className={styles.iconImg} />
-          )}
-        </button>
-      </aside>
+          <button
+            className={styles.iconButton}
+            onClick={() => setPerfilOpen(true)}
+            title="Perfil"
+            style={{ marginBottom: 12 }}
+          >
+            {session?.user?.image ? (
+              <Image src={session.user.image} alt="Perfil" width={32} height={32} style={{ borderRadius: "50%" }} />
+            ) : (
+              <Image src="/user.svg" alt="Perfil" width={20} height={20} className={styles.iconImg} />
+            )}
+          </button>
+        </aside>
+      )}
 
       <main className={styles.main}>{children}</main>
 

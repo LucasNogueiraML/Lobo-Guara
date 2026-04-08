@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from "uuid"
 
 type Props = {
   onClose: () => void
-  onAdd: (t: Transaction) => void
+  onAdd: (t: Transaction) => Promise<boolean> | boolean
 }
 
 type RecorrenciaTipo = "nunca" | "D" | "S" | "M" | "A"
@@ -57,7 +57,7 @@ export default function TransactionModal({ onClose, onAdd }: Props) {
     return null
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const newErrors: Record<string, string> = {}
     if (!title.trim()) newErrors.title = "Dê um nome para a transação"
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
@@ -83,7 +83,12 @@ export default function TransactionModal({ onClose, onAdd }: Props) {
       recorrencia: buildRecorrencia() ?? undefined,
     }
 
-    onAdd(newTransaction)
+    const saved = await onAdd(newTransaction)
+    if (!saved) {
+      setErrors((prev) => ({ ...prev, title: "Nao foi possivel sincronizar agora. Tente novamente." }))
+      return
+    }
+
     onClose()
   }
 

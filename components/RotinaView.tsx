@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 
 import HabitoCard from "@/components/HabitoCard"
@@ -59,6 +59,33 @@ function mergeRemoteWithLocal(remote: Habito[], local: Habito[]): Habito[] {
   return sortByTitle([...mergedRemote, ...onlyLocal])
 }
 
+function monthKeyFromDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+}
+
+function parseMonthKey(monthKey: string): Date | null {
+  const match = monthKey.match(/^(\d{4})-(\d{2})$/)
+  if (!match) return null
+
+  const year = Number.parseInt(match[1], 10)
+  const month = Number.parseInt(match[2], 10)
+
+  if (month < 1 || month > 12) return null
+  return new Date(year, month - 1, 1)
+}
+
+function formatMonthKeyLabel(monthKey: string): string {
+  const parsed = parseMonthKey(monthKey)
+  if (!parsed) return monthKey
+
+  return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(parsed)
+}
+
+function extractMonthKey(isoDate: string): string | null {
+  if (!isoDate.match(/^\d{4}-\d{2}-\d{2}$/)) return null
+  return isoDate.slice(0, 7)
+}
+
 export default function RotinaView() {
   const [habitos, setHabitos] = useState<Habito[]>(() => sortByTitle(parseLocalHabits()))
   const [novoHabito, setNovoHabito] = useState("")
@@ -80,33 +107,55 @@ export default function RotinaView() {
       })
   }, [])
 
+  const now = new Date()
+  const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const todayIso = getTodayISO()
-  const todayDate = new Date()
-  const currentYear = todayDate.getFullYear()
-  const currentMonth = todayDate.getMonth()
-  const currentDay = todayDate.getDate()
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
-
-  const monthLabel = new Intl.DateTimeFormat("pt-BR", {
-    month: "long",
-    year: "numeric",
-  }).format(todayDate)
-
-  const monthDays = Array.from({ length: daysInMonth }, (_, index) => index + 1)
+  const currentMonthKey = monthKeyFromDate(todayDate)
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey)
+  const [monthMenuOpen, setMonthMenuOpen] = useState(false)
+  const monthPickerRef = useRef<HTMLDivElement | null>(null)
 
   const historyByHabit = new Map<string, Set<string>>()
-
   habitos.forEach((habit) => {
     historyByHabit.set(habit.id, new Set(inferirHistorico(habit)))
   })
 
+  const monthSet = new Set<string>([currentMonthKey])
+  historyByHabit.forEach((history) => {
+    history.forEach((isoDate) => {
+      const monthKey = extractMonthKey(isoDate)
+      if (monthKey) monthSet.add(monthKey)
+    })
+  })
+
+  const availableMonths = Array.from(monthSet).sort((left, right) => right.localeCompare(left)).slice(0, 36)
+  const activeMonth = availableMonths.includes(selectedMonth) ? selectedMonth : currentMonthKey
+  const selectedDate = parseMonthKey(activeMonth) ?? new Date(todayDate.getFullYear(), todayDate.getMonth(), 1)
+  const selectedYear = selectedDate.getFullYear()
+  const selectedMonthIndex = selectedDate.getMonth()
+  const daysInMonth = new Date(selectedYear, selectedMonthIndex + 1, 0).getDate()
+  const monthLabel = formatMonthKeyLabel(activeMonth)
+  const monthDays = Array.from({ length: daysInMonth }, (_, index) => index + 1)
+
+  useEffect(() => {
+    function handleOutsideClick(event: MouseEvent) {
+      if (!monthPickerRef.current) return
+      if (monthPickerRef.current.contains(event.target as Node)) return
+      setMonthMenuOpen(false)
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick)
+    return () => document.removeEventListener("mousedown", handleOutsideClick)
+  }, [])
+
+  const totalHabitos = habitos.length
   const feitosHoje = habitos.filter((habit) => {
     const history = historyByHabit.get(habit.id)
     return history?.has(todayIso) ?? false
   }).length
-
-  const totalHabitos = habitos.length
-  const progresso = totalHabitos > 0 ? Math.round((feitosHoje / totalHabitos) * 100) : 0
+  const progressoHoje = totalHabitos > 0 ? Math.round((feitosHoje / totalHabitos) * 100) : 0
+  const isCurrentMonthSelected = activeMonth === currentMonthKey
+  const daysElapsedInMonth = activeMonth < currentMonthKey ? daysInMonth : isCurrentMonthSelected ? todayDate.getDate() : 0
 
   const melhorStreak = habitos.reduce((best, habit) => Math.max(best, habit.streak), 0)
 
@@ -123,17 +172,21 @@ export default function RotinaView() {
     let done = 0
 
     monthDays.forEach((day) => {
-      if (day > currentDay) return
+      const monthDate = new Date(selectedYear, selectedMonthIndex, day)
+      if (monthDate.getTime() > todayDate.getTime()) return
 
-      const monthDate = new Date(currentYear, currentMonth, day)
       if (history.has(toISODate(monthDate))) done += 1
     })
 
     return total + done
   }, 0)
 
-  const totalSlotsMes = totalHabitos * Math.max(currentDay, 1)
+  const totalSlotsMes = totalHabitos * daysElapsedInMonth
   const consistenciaMes = totalSlotsMes > 0 ? Math.round((concluidosNoMes / totalSlotsMes) * 100) : 0
+  const progresso = isCurrentMonthSelected ? progressoHoje : consistenciaMes
+  const firstKpiLabel = isCurrentMonthSelected ? "Concluidas hoje" : "Concluidas no mes"
+  const firstKpiValue = isCurrentMonthSelected ? `${feitosHoje}/${totalHabitos}` : `${concluidosNoMes}/${totalSlotsMes}`
+  const axisHighlightDay = daysElapsedInMonth > 0 ? daysElapsedInMonth : daysInMonth
 
   const streakRanking = [...habitos]
     .sort((left, right) => {
@@ -175,18 +228,22 @@ export default function RotinaView() {
     setAdding(false)
   }
 
-  async function handleToggle(id: string) {
-    const habit = habitos.find((item) => item.id === id)
-    if (!habit) return
-
-    const history = new Set(inferirHistorico(habit))
-
-    if (history.has(todayIso)) history.delete(todayIso)
-    else history.add(todayIso)
-
-    const nextHistory = normalizarHistorico(Array.from(history))
+  async function updateHabitHistory(id: string, nextHistory: string[]) {
     const nextStreak = calcularStreakDoHistorico(nextHistory)
     const nextUltimo = obterUltimoConcluido(nextHistory)
+
+    const updated = habitos.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            streak: nextStreak,
+            ultimo_concluido: nextUltimo,
+            historico: nextHistory,
+          }
+        : item,
+    )
+
+    saveHabits(updated)
 
     try {
       await fetch("/api/rotina", {
@@ -202,19 +259,23 @@ export default function RotinaView() {
     } catch {
       // Keep local flow working if API is offline.
     }
+  }
 
-    const updated = habitos.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            streak: nextStreak,
-            ultimo_concluido: nextUltimo,
-            historico: nextHistory,
-          }
-        : item,
-    )
+  async function handleToggleDate(id: string, isoDate: string) {
+    const habit = habitos.find((item) => item.id === id)
+    if (!habit) return
 
-    saveHabits(updated)
+    const history = new Set(inferirHistorico(habit))
+
+    if (history.has(isoDate)) history.delete(isoDate)
+    else history.add(isoDate)
+
+    const nextHistory = normalizarHistorico(Array.from(history))
+    await updateHabitHistory(id, nextHistory)
+  }
+
+  async function handleToggle(id: string) {
+    await handleToggleDate(id, todayIso)
   }
 
   async function handleDelete(id: string) {
@@ -235,9 +296,39 @@ export default function RotinaView() {
     <div className={styles.rotinaLayout}>
       <section className={styles.rotinaOverviewCard}>
         <div className={styles.rotinaOverviewHeader}>
-          <div>
+          <div className={styles.rotinaOverviewMain}>
             <h2 className={styles.rotinaOverviewTitle}>Painel de consistencia</h2>
-            <p className={styles.rotinaOverviewSubtitle}>Streak e progresso diario de {monthLabel}</p>
+            <div className={styles.rotinaMonthPickerWrap} ref={monthPickerRef}>
+              <button
+                type="button"
+                className={styles.rotinaMonthPickerButton}
+                onClick={() => setMonthMenuOpen((current) => !current)}
+              >
+                {monthLabel}
+                <span className={styles.rotinaMonthPickerCaret}>▾</span>
+              </button>
+
+              {monthMenuOpen && (
+                <div className={styles.rotinaMonthPickerMenu}>
+                  {availableMonths.map((monthKey) => (
+                    <button
+                      key={monthKey}
+                      type="button"
+                      className={`${styles.rotinaMonthOption} ${
+                        monthKey === activeMonth ? styles.rotinaMonthOptionActive : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedMonth(monthKey)
+                        setMonthMenuOpen(false)
+                      }}
+                    >
+                      {formatMonthKeyLabel(monthKey)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className={styles.rotinaOverviewSubtitle}>Streak e progresso do mes selecionado</p>
           </div>
 
           <div className={styles.rotinaLegend}>
@@ -255,8 +346,8 @@ export default function RotinaView() {
 
         <div className={styles.rotinaKpiGrid}>
           <div className={styles.rotinaKpiCard}>
-            <p className={styles.rotinaKpiLabel}>Concluidas hoje</p>
-            <p className={styles.rotinaKpiValue}>{feitosHoje}/{totalHabitos}</p>
+            <p className={styles.rotinaKpiLabel}>{firstKpiLabel}</p>
+            <p className={styles.rotinaKpiValue}>{firstKpiValue}</p>
           </div>
           <div className={styles.rotinaKpiCard}>
             <p className={styles.rotinaKpiLabel}>Consistencia do mes</p>
@@ -282,7 +373,7 @@ export default function RotinaView() {
             <div className={styles.rotinaDayAxis}>
               {monthDays.map((day) => (
                 <span key={`axis-${day}`} className={styles.rotinaDayAxisTick}>
-                  {day === 1 || day === currentDay || day % 5 === 0 ? day : ""}
+                  {day === 1 || day === axisHighlightDay || day % 5 === 0 ? day : ""}
                 </span>
               ))}
             </div>
@@ -298,9 +389,9 @@ export default function RotinaView() {
               const history = historyByHabit.get(habit.id) ?? new Set<string>()
 
               const doneInMonth = monthDays.reduce((count, day) => {
-                if (day > currentDay) return count
+                const date = new Date(selectedYear, selectedMonthIndex, day)
+                if (date.getTime() > todayDate.getTime()) return count
 
-                const date = new Date(currentYear, currentMonth, day)
                 return history.has(toISODate(date)) ? count + 1 : count
               }, 0)
 
@@ -313,9 +404,9 @@ export default function RotinaView() {
 
                   <div className={styles.rotinaDotGrid}>
                     {monthDays.map((day) => {
-                      const date = new Date(currentYear, currentMonth, day)
+                      const date = new Date(selectedYear, selectedMonthIndex, day)
                       const iso = toISODate(date)
-                      const isFuture = day > currentDay
+                      const isFuture = date.getTime() > todayDate.getTime()
                       const done = history.has(iso)
 
                       const dotClass = done
@@ -325,16 +416,31 @@ export default function RotinaView() {
                           : styles.rotinaDotMiss
 
                       return (
-                        <span
+                        <button
                           key={`${habit.id}-${iso}`}
-                          className={`${styles.rotinaDot} ${dotClass}`}
-                          title={`${habit.title}: ${iso}`}
-                        />
+                          type="button"
+                          aria-pressed={done}
+                          disabled={isFuture}
+                          onClick={() => {
+                            if (isFuture) return
+                            handleToggleDate(habit.id, iso)
+                          }}
+                          className={`${styles.rotinaDotButton} ${styles.rotinaDot} ${dotClass} ${
+                            isFuture ? styles.rotinaDotDisabled : ""
+                          }`}
+                          title={
+                            isFuture
+                              ? `${habit.title}: ${iso} (futuro)`
+                              : `${habit.title}: ${iso} - clique para marcar/desmarcar`
+                          }
+                        >
+                          {done && <span className={styles.rotinaDotCheck}>✓</span>}
+                        </button>
                       )
                     })}
                   </div>
 
-                  <span className={styles.rotinaMonthCount}>{doneInMonth}/{currentDay}</span>
+                  <span className={styles.rotinaMonthCount}>{doneInMonth}/{daysElapsedInMonth}</span>
                 </div>
               )
             })

@@ -117,19 +117,24 @@ export default function HomeStart() {
       recorrencia: null,
     }
 
-    const response = await fetch("/api/financeiro", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newTransaction),
-    })
-
-    if (!response.ok) {
-      setMessage("", "Nao consegui salvar o gasto agora.")
-      return
-    }
-
     const transactions = parseStorageList<Transaction>("transactions")
     window.localStorage.setItem("transactions", JSON.stringify([newTransaction, ...transactions]))
+
+    try {
+      const response = await fetch("/api/financeiro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTransaction),
+      })
+
+      if (!response.ok) {
+        setMessage("Gasto salvo localmente, sem sincronizacao com banco agora.")
+        return
+      }
+    } catch {
+      setMessage("Gasto salvo localmente, sem conexao com banco agora.")
+      return
+    }
 
     setExpenseTitle("")
     setExpenseAmount("")
