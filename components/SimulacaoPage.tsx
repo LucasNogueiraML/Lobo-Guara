@@ -22,7 +22,7 @@ import {
   TransactionType,
   formatBRL,
 } from "@/types/finance"
-import { calcularPrevisao } from "@/app/api/lib/calculo"
+import { calcularPrevisao, calcularResumoGeral } from "@/app/api/lib/calculo"
 
 type SimulacaoItem = {
   id: string
@@ -99,18 +99,22 @@ function toMonthLabel(mesAno: string): string {
   return `${month}/${String(parsed.getFullYear()).slice(-2)}`
 }
 
+function parseLocalTransactions(): Transaction[] {
+  if (typeof window === "undefined") return []
+
+  try {
+    const local = window.localStorage.getItem("transactions")
+    const parsed = local ? JSON.parse(local) : []
+    return Array.isArray(parsed) ? (parsed as Transaction[]) : []
+  } catch {
+    return []
+  }
+}
+
 export default function SimulacaoPage() {
   const privacyEnabled = usePrivacyMode()
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window === "undefined") return []
-
-    try {
-      const local = window.localStorage.getItem("transactions")
-      const parsed = local ? JSON.parse(local) : []
-      return Array.isArray(parsed) ? (parsed as Transaction[]) : []
-    } catch {
-      return []
-    }
+    return parseLocalTransactions()
   })
 
   const [simulationItems, setSimulationItems] = useState<SimulacaoItem[]>(() => {
@@ -165,14 +169,26 @@ export default function SimulacaoPage() {
   }
 
   useEffect(() => {
+    const localTransactions = parseLocalTransactions()
+
     fetch("/api/financeiro")
-      .then((response) => response.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : []
-        setTransactions(list)
-        localStorage.setItem("transactions", JSON.stringify(list))
+      .then((response) => {
+        if (!response.ok) throw new Error("Falha ao buscar financeiro")
+        return response.json()
       })
-      .catch(() => {})
+      .then((data) => {
+        const remote = Array.isArray(data) ? (data as Transaction[]) : []
+        const remoteIds = new Set(remote.map((transaction) => transaction.id))
+        const onlyLocal = localTransactions.filter((transaction) => !remoteIds.has(transaction.id))
+        const merged = [...remote, ...onlyLocal]
+
+        setTransactions(merged)
+        localStorage.setItem("transactions", JSON.stringify(merged))
+      })
+      .catch(() => {
+        setTransactions(localTransactions)
+        localStorage.setItem("transactions", JSON.stringify(localTransactions))
+      })
   }, [])
 
   useEffect(() => {
@@ -218,10 +234,13 @@ export default function SimulacaoPage() {
     })
   }, [transactions])
 
+  const resumoFinanceiro = useMemo(() => calcularResumoGeral(transactions), [transactions])
+
   const simulationData = useMemo<ForecastPoint[]>(() => {
     const patrimonioInicial = Math.max(0, Number(investConfig.capitalInicial) || 0)
     const aporteMensal = Math.max(0, Number(investConfig.aporteMensal) || 0)
     const jurosRate = Math.max(0, Number(investConfig.jurosMensal) || 0) / 100
+    const saldoInicial = Number(resumoFinanceiro.saldoAtual) || 0
 
     const series = baseline.reduce(
       (acc, month) => {
@@ -277,22 +296,23 @@ export default function SimulacaoPage() {
       },
       {
         capital: patrimonioInicial,
-        saldoBaseAcumulado: 0,
-        saldoSimAcumulado: 0,
+        saldoBaseAcumulado: saldoInicial,
+        saldoSimAcumulado: saldoInicial,
         points: [] as ForecastPoint[],
       }
     )
 
     return series.points
-  }, [baseline, simulationItems, investConfig])
+  }, [baseline, simulationItems, investConfig, resumoFinanceiro.saldoAtual])
 
   const summary = useMemo(() => {
+    const saldoInicial = Number(resumoFinanceiro.saldoAtual) || 0
     const totalGanhosAntes = simulationData.reduce((sum, item) => sum + item.receitasBase, 0)
     const totalGanhosDepois = simulationData.reduce((sum, item) => sum + item.receitasSim, 0)
     const totalGastosAntes = simulationData.reduce((sum, item) => sum + item.despesasBase, 0)
     const totalGastosDepois = simulationData.reduce((sum, item) => sum + item.despesasSim, 0)
-    const saldoAntes = simulationData.reduce((sum, item) => sum + item.saldoBase, 0)
-    const saldoDepois = simulationData.reduce((sum, item) => sum + item.saldoSim, 0)
+    const saldoAntes = saldoInicial + simulationData.reduce((sum, item) => sum + item.saldoBase, 0)
+    const saldoDepois = saldoInicial + simulationData.reduce((sum, item) => sum + item.saldoSim, 0)
     const jurosTotal = simulationData.reduce((sum, item) => sum + item.juros, 0)
     const patrimonioFinal = simulationData[simulationData.length - 1]?.patrimonio ?? investConfig.capitalInicial
 
@@ -307,7 +327,7 @@ export default function SimulacaoPage() {
       patrimonioFinal,
       impactoTotal: saldoDepois - saldoAntes,
     }
-  }, [simulationData, investConfig.capitalInicial])
+  }, [simulationData, investConfig.capitalInicial, resumoFinanceiro.saldoAtual])
 
   function handleTypeChange(nextType: TransactionType) {
     setType(nextType)

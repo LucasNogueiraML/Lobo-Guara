@@ -64,6 +64,8 @@ type PiePoint = {
   displayValue?: number
 }
 
+type SyncState = "loading" | "remote" | "local"
+
 function toDayStart(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
@@ -122,56 +124,93 @@ function formatSignedCurrency(value: number): string {
   return `${prefix}${formatBRL(Math.abs(value))}`
 }
 
+function parseLocalTasks(): Task[] {
+  if (typeof window === "undefined") return []
+
+  try {
+    const local = window.localStorage.getItem("tasks")
+    const parsed = local ? JSON.parse(local) : []
+    return Array.isArray(parsed) ? (parsed as Task[]) : []
+  } catch {
+    return []
+  }
+}
+
+function parseLocalTransactions(): Transaction[] {
+  if (typeof window === "undefined") return []
+
+  try {
+    const local = window.localStorage.getItem("transactions")
+    const parsed = local ? JSON.parse(local) : []
+    return Array.isArray(parsed) ? (parsed as Transaction[]) : []
+  } catch {
+    return []
+  }
+}
+
 export default function MenuInicial() {
   const router = useRouter()
   const { data: session } = useSession()
   const privacyEnabled = usePrivacyMode()
 
   const [tasks, setTasks] = useState<Task[]>(() => {
-    if (typeof window === "undefined") return []
-
-    try {
-      const local = window.localStorage.getItem("tasks")
-      const parsed = local ? JSON.parse(local) : []
-      return Array.isArray(parsed) ? (parsed as Task[]) : []
-    } catch {
-      return []
-    }
+    return parseLocalTasks()
   })
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window === "undefined") return []
-
-    try {
-      const local = window.localStorage.getItem("transactions")
-      const parsed = local ? JSON.parse(local) : []
-      return Array.isArray(parsed) ? (parsed as Transaction[]) : []
-    } catch {
-      return []
-    }
+    return parseLocalTransactions()
   })
 
   const [chartsReady, setChartsReady] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [tasksSync, setTasksSync] = useState<SyncState>("loading")
+  const [financeSync, setFinanceSync] = useState<SyncState>("loading")
 
   useEffect(() => {
+    const localTasks = parseLocalTasks()
+    const localTransactions = parseLocalTransactions()
+
     fetch("/api/tasks")
-      .then((response) => response.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : []
-        setTasks(list)
-        localStorage.setItem("tasks", JSON.stringify(list))
+      .then((response) => {
+        if (!response.ok) throw new Error("Falha ao buscar tarefas")
+        return response.json()
       })
-      .catch(() => {})
+      .then((data) => {
+        const remote = Array.isArray(data) ? (data as Task[]) : []
+        const remoteIds = new Set(remote.map((task) => task.id))
+        const onlyLocal = localTasks.filter((task) => !remoteIds.has(task.id))
+        const merged = [...remote, ...onlyLocal]
+
+        setTasks(merged)
+        localStorage.setItem("tasks", JSON.stringify(merged))
+        setTasksSync("remote")
+      })
+      .catch(() => {
+        setTasks(localTasks)
+        localStorage.setItem("tasks", JSON.stringify(localTasks))
+        setTasksSync("local")
+      })
 
     fetch("/api/financeiro")
-      .then((response) => response.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : []
-        setTransactions(list)
-        localStorage.setItem("transactions", JSON.stringify(list))
+      .then((response) => {
+        if (!response.ok) throw new Error("Falha ao buscar financeiro")
+        return response.json()
       })
-      .catch(() => {})
+      .then((data) => {
+        const remote = Array.isArray(data) ? (data as Transaction[]) : []
+        const remoteIds = new Set(remote.map((transaction) => transaction.id))
+        const onlyLocal = localTransactions.filter((transaction) => !remoteIds.has(transaction.id))
+        const merged = [...remote, ...onlyLocal]
+
+        setTransactions(merged)
+        localStorage.setItem("transactions", JSON.stringify(merged))
+        setFinanceSync("remote")
+      })
+      .catch(() => {
+        setTransactions(localTransactions)
+        localStorage.setItem("transactions", JSON.stringify(localTransactions))
+        setFinanceSync("local")
+      })
   }, [])
 
   useEffect(() => {
@@ -196,6 +235,12 @@ export default function MenuInicial() {
     if (hour < 18) return "Boa tarde"
     return "Boa noite"
   }, [])
+
+  function syncLabel(syncState: SyncState): string {
+    if (syncState === "loading") return "verificando..."
+    if (syncState === "remote") return "banco online"
+    return "modo local"
+  }
 
   function formatSignedCurrencyForUI(value: number): string {
     if (privacyEnabled) return "****"
@@ -388,6 +433,31 @@ export default function MenuInicial() {
           <div>
             <h1 className={styles.title}>{saudacao}, {nome}</h1>
             <p className={styles.subtitle}>{analytics.headerMessage}</p>
+          </div>
+
+          <div className={styles.syncWrap}>
+            <span
+              className={`${styles.syncBadge} ${
+                financeSync === "remote"
+                  ? styles.syncRemote
+                  : financeSync === "local"
+                    ? styles.syncLocal
+                    : styles.syncLoading
+              }`}
+            >
+              Financeiro: {syncLabel(financeSync)}
+            </span>
+            <span
+              className={`${styles.syncBadge} ${
+                tasksSync === "remote"
+                  ? styles.syncRemote
+                  : tasksSync === "local"
+                    ? styles.syncLocal
+                    : styles.syncLoading
+              }`}
+            >
+              Tarefas: {syncLabel(tasksSync)}
+            </span>
           </div>
         </header>
 

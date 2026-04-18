@@ -19,6 +19,42 @@ export function hoje(): string {
   return new Date().toISOString().split("T")[0]
 }
 
+function formatarDateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`
+}
+
+function normalizarDate(dateValue?: string | null): string | null {
+  if (!dateValue) return null
+
+  const normalized = dateValue.trim()
+  if (!normalized) return null
+
+  const isoDateMatch = normalized.match(/^(\d{4}-\d{2}-\d{2})$/)
+  if (isoDateMatch) return isoDateMatch[1]
+
+  const isoDateTimeMatch = normalized.match(/^(\d{4}-\d{2}-\d{2})T/)
+  if (isoDateTimeMatch) return isoDateTimeMatch[1]
+
+  const slashDateMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/)
+  if (slashDateMatch) {
+    const day = Number.parseInt(slashDateMatch[1], 10)
+    const month = Number.parseInt(slashDateMatch[2], 10)
+    const currentYear = new Date().getFullYear()
+    const rawYear = slashDateMatch[3] ? Number.parseInt(slashDateMatch[3], 10) : currentYear
+    const fullYear = rawYear < 100 ? 2000 + rawYear : rawYear
+
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${fullYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    }
+  }
+
+  const parsed = new Date(normalized)
+  if (Number.isNaN(parsed.getTime())) return null
+  return formatarDateKey(parsed)
+}
+
 // â”€â”€â”€ 1. Totais por mÃªs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ResumoMes = {
@@ -35,11 +71,19 @@ export function calcularPorMes(transactions: Transaction[]): ResumoMes[] {
   const hojeStr = hoje()
 
   for (const t of transactions) {
-    if (!t.date || t.date > hojeStr) continue
+    const dateKey = normalizarDate(t.date)
+    if (!dateKey || dateKey > hojeStr) continue
 
-    const chave = chaveMesAno(t.date)
+    const chave = chaveMesAno(dateKey)
     if (!mapa[chave]) {
-      mapa[chave] = { mesAno: chave, mes: mesDeDate(t.date), ano: anoDeDate(t.date), receitas: 0, despesas: 0, saldo: 0 }
+      mapa[chave] = {
+        mesAno: chave,
+        mes: mesDeDate(dateKey),
+        ano: anoDeDate(dateKey),
+        receitas: 0,
+        despesas: 0,
+        saldo: 0,
+      }
     }
 
     if (t.type === "receita") mapa[chave].receitas += Number(t.amount)
@@ -65,7 +109,8 @@ export function calcularPorCategoria(transactions: Transaction[]): ResumoCategor
   const hojeStr = hoje()
 
   for (const t of transactions) {
-    if (!t.date || t.date > hojeStr) continue
+    const dateKey = normalizarDate(t.date)
+    if (!dateKey || dateKey > hojeStr) continue
 
     const chave = `${t.category}__${t.type}`
     if (!mapa[chave]) {
@@ -81,10 +126,11 @@ export function calcularPorCategoria(transactions: Transaction[]): ResumoCategor
 // â”€â”€â”€ 3. ExpansÃ£o de recorrÃªncia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function expandirRecorrencia(t: Transaction, ate: string): Transaction[] {
-  if (!t.recorrencia || !t.date) return []
+  const baseDateKey = normalizarDate(t.date)
+  if (!t.recorrencia || !baseDateKey) return []
 
   const resultado: Transaction[] = []
-  const dataBase = new Date(t.date)
+  const dataBase = new Date(`${baseDateKey}T00:00:00`)
   const dataFim  = new Date(ate)
   const hojeStr  = hoje()
 
@@ -151,27 +197,35 @@ export function calcularPrevisao(transactions: Transaction[], meses = 3): Previs
   limite.setMonth(limite.getMonth() + meses)
   const limiteStr = limite.toISOString().split("T")[0]
 
-  const futuras = transactions.filter(
-    (t) => t.date && t.date > hojeStr && !t.recorrencia
-  )
+  const futuras: Transaction[] = []
+
+  for (const t of transactions) {
+    const dateKey = normalizarDate(t.date)
+    if (!dateKey || dateKey <= hojeStr || t.recorrencia) continue
+    futuras.push({ ...t, date: dateKey })
+  }
 
   const recorrentes = transactions
     .filter((t) => t.recorrencia)
     .flatMap((t) => expandirRecorrencia(t, limiteStr))
 
-  const todas = [...futuras, ...recorrentes].filter(
-    (t) => t.date && t.date <= limiteStr
-  )
+  const todas = [...futuras, ...recorrentes].filter((t) => {
+    const dateKey = normalizarDate(t.date)
+    return Boolean(dateKey && dateKey <= limiteStr)
+  })
 
   const mapa: Record<string, PrevisaoMes> = {}
 
   for (const t of todas) {
-    const chave = chaveMesAno(t.date!)
+    const dateKey = normalizarDate(t.date)
+    if (!dateKey) continue
+
+    const chave = chaveMesAno(dateKey)
     if (!mapa[chave]) {
       mapa[chave] = {
         mesAno: chave,
-        mes: mesDeDate(t.date!),
-        ano: anoDeDate(t.date!),
+        mes: mesDeDate(dateKey),
+        ano: anoDeDate(dateKey),
         receitasPrevistas: 0,
         despesasPrevistas: 0,
         saldoPrevisto: 0,
@@ -185,7 +239,7 @@ export function calcularPrevisao(transactions: Transaction[], meses = 3): Previs
     mapa[chave].saldoPrevisto =
       mapa[chave].receitasPrevistas - mapa[chave].despesasPrevistas
 
-    mapa[chave].transacoes.push(t)
+    mapa[chave].transacoes.push({ ...t, date: dateKey })
   }
 
   for (let i = 1; i <= meses; i++) {
@@ -222,7 +276,10 @@ export type ResumoGeral = {
 export function calcularResumoGeral(transactions: Transaction[]): ResumoGeral {
   const hojeStr = hoje()
 
-  const passadas = transactions.filter((t) => t.date && t.date <= hojeStr)
+  const passadas = transactions.filter((t) => {
+    const dateKey = normalizarDate(t.date)
+    return Boolean(dateKey && dateKey <= hojeStr)
+  })
 
   const totalReceitas = passadas
     .filter((t) => t.type === "receita")
