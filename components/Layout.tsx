@@ -91,6 +91,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <span className={styles.iconEmoji}>🔁</span>
           </button>
 
+          <button className={styles.iconButton} onClick={() => router.push("/organizador")} title="Organizador do dia">
+            <span className={styles.iconEmoji}>🧩</span>
+          </button>
+
           <button className={styles.iconButton} onClick={() => router.push("/financeiro")} title="Financeiro">
             <Image src="/money.svg" alt="Financeiro" width={20} height={20} className={styles.iconImg} />
           </button>

@@ -1,0 +1,357 @@
+.page {
+  min-height: 100vh;
+  position: relative;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 14%, rgba(56, 189, 248, 0.12), transparent 42%),
+    radial-gradient(circle at 86% 84%, rgba(16, 185, 129, 0.12), transparent 40%),
+    var(--container-bg);
+  z-index: 0;
+}
+
+.main {
+  margin-left: 68px;
+  padding: 34px 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font-size: 30px;
+  letter-spacing: -0.4px;
+}
+
+.subtitle {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.dateWrap {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.5);
+  padding: 10px 12px;
+  min-width: 210px;
+}
+
+.dateLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.dateInput {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.kpiRow {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.kpiCard {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+  padding: 10px 12px;
+}
+
+.kpiLabel {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.kpiValue {
+  margin: 3px 0 0;
+  font-size: 21px;
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.warning {
+  color: #f59e0b;
+}
+
+.good {
+  color: #34d399;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.library {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.libraryCard {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.58);
+  padding: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sectionHint {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.pieceList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.piece {
+  border-radius: 10px;
+  border: 1px dashed rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 9px 10px;
+  cursor: grab;
+  user-select: none;
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+.piece strong {
+  display: block;
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.piece span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #bae6fd;
+}
+
+.timeline {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.62);
+  padding: 12px;
+}
+
+.timelineHeader {
+  margin-bottom: 10px;
+}
+
+.timelineBody {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.timeAxis {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeTick {
+  height: 34px;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 11px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-top: 2px;
+  padding-right: 6px;
+}
+
+.canvas {
+  position: relative;
+  height: calc(34px * 48);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.05) 0,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px,
+      transparent 34px
+    );
+  overflow: hidden;
+}
+
+.dropZone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.15);
+}
+
+.dropZoneActive {
+  background: rgba(16, 185, 129, 0.16);
+}
+
+.block {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: grab;
+  overflow: hidden;
+  min-height: 30px;
+}
+
+.block:active {
+  cursor: grabbing;
+}
+
+.blockTask {
+  background: rgba(99, 102, 241, 0.26);
+  border-color: rgba(99, 102, 241, 0.48);
+}
+
+.blockRoutine {
+  background: rgba(16, 185, 129, 0.24);
+  border-color: rgba(16, 185, 129, 0.46);
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.blockTitle {
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.blockTime {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 11px;
+}
+
+.blockControls {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.durationSelect {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.65);
+  color: #e2e8f0;
+  font-size: 11px;
+  padding: 3px 6px;
+}
+
+.iconBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.5);
+  color: rgba(248, 250, 252, 0.85);
+  cursor: pointer;
+}
+
+.repeatBtn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.5);
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.repeatActive {
+  border-color: rgba(16, 185, 129, 0.55);
+  background: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1060px) {
+  .main {
+    margin-left: 68px;
+    padding: 26px 18px;
+  }
+
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+    padding: 20px 12px;
+  }
+
+  .kpiRow {
+    grid-template-columns: 1fr;
+  }
+
+  .timelineBody {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+}
+
