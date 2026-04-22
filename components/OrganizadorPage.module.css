@@ -173,6 +173,54 @@
   color: #bae6fd;
 }
 
+.customForm {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.customLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.customInput,
+.customSelect {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.customButton {
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 10px;
+  cursor: pointer;
+}
+
+.customError {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 11px;
+}
+
 .timeline {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -260,6 +308,11 @@
 .blockRoutine {
   background: rgba(16, 185, 129, 0.24);
   border-color: rgba(16, 185, 129, 0.46);
+}
+
+.blockCustom {
+  background: rgba(245, 158, 11, 0.23);
+  border-color: rgba(245, 158, 11, 0.46);
 }
 
 .blockHeader {
@@ -353,5 +406,8 @@
   .timelineBody {
     grid-template-columns: 54px minmax(0, 1fr);
   }
-}
 
+  .customRow {
+    grid-template-columns: 1fr;
+  }
+}

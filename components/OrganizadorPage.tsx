@@ -6,7 +6,7 @@ import styles from "./OrganizadorPage.module.css"
 import { Habito } from "@/types/rotina"
 import { Task } from "@/types/task"
 
-type PlannerSourceType = "task" | "routine"
+type PlannerSourceType = "task" | "routine" | "custom"
 
 type PlannerBlock = {
   id: string
@@ -70,6 +70,18 @@ function formatTimeFromMinutes(totalMinutes: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
 }
 
+function parseTimeInput(value: string): number | null {
+  const match = value.match(/^(\d{2}):(\d{2})$/)
+  if (!match) return null
+
+  const hours = Number.parseInt(match[1], 10)
+  const minutes = Number.parseInt(match[2], 10)
+
+  if (hours < 0 || hours > 23) return null
+  if (minutes < 0 || minutes > 59) return null
+  return hours * 60 + minutes
+}
+
 function clampStart(startMin: number, durationMin: number): number {
   const maxStart = Math.max(0, MAX_MINUTES - durationMin)
   return Math.max(0, Math.min(startMin, maxStart))
@@ -99,6 +111,10 @@ export default function OrganizadorPage() {
   const [routineDefaults, setRoutineDefaults] = useState<RoutineDefault[]>([])
   const [dragOverStart, setDragOverStart] = useState<number | null>(null)
   const [hydrated, setHydrated] = useState(false)
+  const [customTitle, setCustomTitle] = useState("")
+  const [customStartTime, setCustomStartTime] = useState("08:00")
+  const [customDuration, setCustomDuration] = useState("60")
+  const [customError, setCustomError] = useState("")
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -260,6 +276,32 @@ export default function OrganizadorPage() {
     }
 
     updateDayPlan((current) => [...current, block])
+  }
+
+  function handleAddCustomBlock() {
+    const title = customTitle.trim()
+    const startMin = parseTimeInput(customStartTime)
+    const durationMin = Number(customDuration)
+
+    if (!title) {
+      setCustomError("Digite um nome para o bloco do dia.")
+      return
+    }
+
+    if (startMin === null) {
+      setCustomError("Defina um horario valido.")
+      return
+    }
+
+    if (!Number.isFinite(durationMin) || durationMin <= 0) {
+      setCustomError("Defina uma duracao valida.")
+      return
+    }
+
+    addBlockFromLibrary("custom", `custom-${selectedDate}-${Date.now()}`, title, startMin, durationMin)
+    setCustomTitle("")
+    setCustomDuration("60")
+    setCustomError("")
   }
 
   function moveBlock(blockId: string, slotStart: number) {
@@ -450,6 +492,66 @@ export default function OrganizadorPage() {
                 )}
               </div>
             </div>
+
+            <div className={styles.libraryCard}>
+              <h3 className={styles.sectionTitle}>Bloco avulso do dia</h3>
+              <p className={styles.sectionHint}>Ideal para dormir, almoco, lanche, banho e outros itens do dia.</p>
+
+              <div className={styles.customForm}>
+                <input
+                  className={styles.customInput}
+                  placeholder="Ex: dormir, almoco, lanche..."
+                  value={customTitle}
+                  onChange={(event) => {
+                    setCustomTitle(event.target.value)
+                    if (customError) setCustomError("")
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") handleAddCustomBlock()
+                  }}
+                />
+
+                <div className={styles.customRow}>
+                  <div>
+                    <label className={styles.customLabel}>Horario</label>
+                    <input
+                      className={styles.customInput}
+                      type="time"
+                      step={1800}
+                      value={customStartTime}
+                      onChange={(event) => {
+                        setCustomStartTime(event.target.value)
+                        if (customError) setCustomError("")
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={styles.customLabel}>Duracao</label>
+                    <select
+                      className={styles.customSelect}
+                      value={customDuration}
+                      onChange={(event) => {
+                        setCustomDuration(event.target.value)
+                        if (customError) setCustomError("")
+                      }}
+                    >
+                      {[30, 60, 90, 120, 150, 180, 240].map((minutes) => (
+                        <option key={`custom-duration-${minutes}`} value={minutes}>
+                          {minutes} min
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {customError && <p className={styles.customError}>{customError}</p>}
+
+                <button className={styles.customButton} onClick={handleAddCustomBlock}>
+                  Adicionar no dia
+                </button>
+              </div>
+            </div>
           </aside>
 
           <section className={styles.timeline}>
@@ -491,7 +593,13 @@ export default function OrganizadorPage() {
                   return (
                     <div
                       key={block.id}
-                      className={`${styles.block} ${block.sourceType === "routine" ? styles.blockRoutine : styles.blockTask}`}
+                      className={`${styles.block} ${
+                        block.sourceType === "routine"
+                          ? styles.blockRoutine
+                          : block.sourceType === "custom"
+                            ? styles.blockCustom
+                            : styles.blockTask
+                      }`}
                       style={{ top: (start / SLOT_MINUTES) * ROW_HEIGHT + 2, height }}
                       draggable
                       onDragStart={(event) => {
